@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">    
+        <title>Project 3</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+        <style>
+            .btn { width: 130px; }
+            .container { margin-top: 50px; max-width: 50%; }
+            .visible { display: block; }
+            .invisible { display: none; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div id="registerFormDiv" class="invisible">
+                <form id="registerForm" class="row g-3">
+                    <div class="col-md-6">
+                      <label for="registerFirstName" class="form-label">First Name</label>
+                      <input type="text" class="form-control" id="registerFirstName">
+                    </div>
+                    <div class="col-md-6">
+                      <label for="registerLastName" class="form-label">Last Name</label>
+                      <input type="text" class="form-control" id="registerLastName">
+                    </div>
+                    <div class="col-12">
+                      <label for="registerEmail" class="form-label">Email</label>
+                      <input type="email" class="form-control" id="registerEmail">
+                    </div>
+                    <div class="col-12">
+                        <label for="registerUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="registerUsername">
+                    </div>
+                    <div class="col-md-12">
+                      <label for="registerPassword" class="form-label">Password</label>
+                      <input type="password" class="form-control" id="registerPassword">
+                    </div>
+                    <div class="col-md-12">
+                      <label for="registerRePassword" class="form-label">Confirm Password</label>
+                      <input type="password" class="form-control" id="registerRePassword">
+                    </div>
+                    <div class="col-md-12">
+                      <button type="submit" class="btn btn-primary">
+                        Register
+                      </button>
+                    </div>
+                  </form>
+                  <div style="margin-top: 20px;">
+                    Already have an account? 
+                    <a id="loginLink" href="#" style="text-decoration: none;">
+                        Login
+                    </a>
+                  </div>
+            </div>
+            <div id="loginFormDiv">
+                <form id="loginForm" class="row g-3">
+                    <div class="col-md-12">
+                        <label for="loginUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="loginUsername">
+                    </div>
+                    <div class="col-md-12">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword">
+                    </div>
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">
+                            Login
+                        </button>
+                    </div>
+                </form>
+                <div style="margin-top: 20px;">
+                    Don't have an account? 
+                    <a id="registerLink" href="#" style="text-decoration: none;">
+                        Register
+                    </a>
+                  </div>
+            </div>
+            <div id="welcomeDiv" class="invisible">
+                <h3>
+                    Welcome, <span id="username">User</span>.
+                </h3>
+                <button id="logoutBtn" class="btn btn-danger" style="margin-top: 50px;">Logout</button>
+            </div>
+            <!-- Errors displayed here -->
+            <div id="errorDiv" class="invisible"></div>
+            <script src="./script.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+        </div>
+    </body>
+</html>
