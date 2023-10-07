@@ -13,3 +13,5 @@
 `python3 db.py`
 
 #### Start the web page
+
+#### Contributions
