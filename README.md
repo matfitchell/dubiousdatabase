@@ -9,6 +9,8 @@
 
 #### Start the backend app
 Install the dependencies `python3 -m pip install PATH_TO_REPOSITORY`
+Start the mysql instance
+Set the DB_PASS environment variable
 Start the backend app `python3 db.py`
 
 #### Start the web page
