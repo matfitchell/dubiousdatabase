@@ -61,6 +61,9 @@ def login():
   except Exception as e:
     print(e)
     return {"status":"failed", "error": "AN EXCEPTION OCCURED"}
+  if str(cursor) == None or password == None:
+    print("Username doesn't exist")
+    return {"status":"failed", "error": "INVALiD CREDENTIALS"}
   status = "succeed" if check_password(str(cursor), password) else "failed"
   print(status)
   return {"status":status}
