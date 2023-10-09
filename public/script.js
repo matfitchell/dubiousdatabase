@@ -47,17 +47,17 @@ async function logoutClicked() {
     try {
         const response = await fetch(API + '/api/logout', {
             method: 'GET',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
         if (response.ok) {
+            let jsonObj = await response.json();
             setLoggedOut();
         }
         else {
-            console.log(response.body.message);
+            console.log("ERROR: Something went wrong.")
         }
     } catch (err) {
         console.log(err);
@@ -115,7 +115,7 @@ async function registerFormSubmit(e) {
         const response = await fetch(API + "/api/register", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(userObj)
         });
