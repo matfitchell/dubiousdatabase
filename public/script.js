@@ -5,6 +5,8 @@ let welcomeDiv;
 let loginForm;
 let registerForm;
 
+const API = "http://localhost:5000"
+
 function start() {
     loginFormDiv = document.getElementById("loginFormDiv");
     registerFormDiv = document.getElementById("registerFormDiv");
@@ -42,24 +44,24 @@ function displayRegisterForm() {
 async function logoutClicked() {
     setLoggedOut();
 
-    // try {
-    //     const response = await fetch('/api/logout', {
-    //         method: 'GET',
-    //         credentials: 'include',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         }
-    //     });
+    try {
+        const response = await fetch(API + '/api/logout', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
 
-    //     if (response.ok) {
-    //         setLoggedOut();
-    //     }
-    //     else {
-    //         console.log(response.body.message);
-    //     }
-    // } catch (err) {
-    //     console.log(err);
-    // }
+        if (response.ok) {
+            setLoggedOut();
+        }
+        else {
+            console.log(response.body.message);
+        }
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 async function loginFormSubmit(e) {
@@ -69,29 +71,27 @@ async function loginFormSubmit(e) {
     let password = document.getElementById("loginPassword").value;
     let userObj = { username: username, password: password };
 
-    setLoggedIn(userObj.username);  //Testing; will be removed after
+    try {
+        const response = await fetch(API + "/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userObj)
+        });
 
-    // try {
-    //     const response = await fetch("/api/login", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify(userObj)
-    //     });
+        if (response.ok) {
+            let jsonObj = await response.json();
+            setLoggedIn(jsonObj.username);
+        }
+        else {
+            let jsonObj = await response.json();
+            setErrorDiv(jsonObj.message);
+        }
 
-    //     if (response.ok) {
-    //         let jsonObj = await response.json();
-    //         setLoggedIn(jsonObj.username);
-    //     }
-    //     else {
-    //         let jsonObj = await response.json();
-    //         setErrorDiv(jsonObj.message);
-    //     }
-
-    // } catch (err) {
-    //     console.log(err);
-    // }
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 async function registerFormSubmit(e) {
@@ -106,31 +106,32 @@ async function registerFormSubmit(e) {
     let userObj = { 
         username: username, 
         password: password,
-        firstName: firstName,
-        lastName: lastName,
+        first_name: firstName,
+        last_name: lastName,
         email: email,
     };
 
-    // try {
-    //     const response = await fetch("/api/register", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify(userObj)
-    //     });
+    try {
+        const response = await fetch(API + "/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userObj)
+        });
 
-    //     if (response.ok) {
-    //         //User will have to log in once they sign up successfully.
-    //         setLoggedOut();
-    //     }
-    //     else {
-    //         let jsonObj = await response.json();
-    //         setErrorDiv(jsonObj.message);
-    //     }
-    // } catch (err) {
-    //     console.log(err);
-    // }
+        if (response.ok && response.json()["status"] == "success") {
+            console.log(response.json())
+            //User will have to log in once they sign up successfully.
+            setLoggedOut();
+        }
+        else {
+            let jsonObj = await response.json();
+            setErrorDiv(jsonObj.message);
+        }
+    } catch (err) {
+        console.log(err);
+    }
 
     displayLoginForm();
 }
