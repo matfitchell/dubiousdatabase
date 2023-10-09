@@ -16,18 +16,19 @@ db = mysql.connector.connect(
 )
 
 def hash_password(password: str):
+  # Generates bytestring of 16 random bytes
   salt = os.urandom(16)
   hashed = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 110000)
   return hashed, salt
 
 def check_password(hashed: bytes, password: str, salt: bytes) -> bool:
+  # Hash entered password with their salt
   check_password_hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 110000)
 
   if check_password_hash == hashed:
     return True
   else:
     return False
-  # return hmac.compare_digest(hashed, hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 110000))
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -47,11 +48,20 @@ def register():
 
     db.commit()
   except Exception as e:
+    # Unique modifier prevents duplicate username/email
     print(e)
-    return jsonify({ "message": "User already exists with username or email." }), 401
+    response = {
+      "status": "failed",
+      "message": "User already exists with username or email."
+    }
+    return jsonify(response), 401
 
   print(f"{cursor.rowcount} record{'' if cursor.rowcount == 1 else 's'} inserted.")
-  return "SUCCESS"
+
+  response = {
+    "message": "User successfully registered."
+  }
+  return jsonify(response)
 
 @app.route('/api/login', methods=["POST"])
 def login():
@@ -65,26 +75,45 @@ def login():
     values = (username,)
     cursor.execute(sql, values)
     
+    # Gets next row; there will only be 1 from sql query
     result = cursor.fetchone()
     
+    # No user with specified username
     if result == None:
-      return jsonify({ "message:":"Invalid credentials" }), 401
+      response = {
+        "message":"Invalid credentials. Please try again"
+      }
+      return jsonify(response), 401
     
     # Result in order of SELECT statement
     db_password, db_salt = result
     
     if check_password(db_password, password, db_salt):
-      return jsonify({ "username": username })
+      response = {
+        "username": username
+      }
+      return jsonify(response)
     else:
-      return jsonify({ "message":"Invalid credentials."}), 401
+      # Password did not match for specified user
+      response = {
+        "message":"Invalid credentials. Please try again."
+      }
+      return jsonify(response), 401
     
   except Exception as e:
     print(e)
-    return jsonify({ "status":"failed", "error":"AN EXCEPTION OCCURED." })
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response)
 
 @app.route('/api/logout')
 def logout():
-  return jsonify({ "status":"success", "message":"Successfully logged out." })
+  response = {
+    "message":"Successfully logged out." 
+  }
+  return jsonify(response)
 
 if __name__ == '__main__':
     app.run(port=5000)
