@@ -15,6 +15,27 @@ db = mysql.connector.connect(
   database="dubiousdb"
 )
 
+cursor = db.cursor()
+
+# Drop user table if it exists
+cursor.execute("DROP TABLE IF EXISTS `user`")
+
+# Create user table
+sqlCreate = """ 
+CREATE TABLE `user` (
+  `userName` varchar(255) NOT NULL,
+  `passWord` varbinary(255) NOT NULL,
+  `passSalt` varbinary(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `firstName` varchar(255) DEFAULT NULL,
+  `lastName` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`userName`),
+  UNIQUE KEY `userName_UNIQUE` (`userName`),
+  UNIQUE KEY `email_UNIQUE` (`email`)
+)
+"""
+cursor.execute(sqlCreate)
+
 def hash_password(password: str):
   # Generates bytestring of 16 random bytes
   salt = os.urandom(16)
@@ -38,7 +59,7 @@ def register():
   first_name = request.json['first_name']
   last_name = request.json['last_name']
 
-  cursor = db.cursor()
+  # cursor = db.cursor()
   hashed_password, salt = hash_password(password)
 
   try:
@@ -68,7 +89,7 @@ def login():
   username = request.json['username']
   password = request.json['password']
 
-  cursor = db.cursor()
+  # cursor = db.cursor()
 
   try:
     sql = "SElECT passWord, passSalt FROM (user) WHERE userName= %s"
