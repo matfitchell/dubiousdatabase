@@ -13,7 +13,7 @@ Open backend folder and install dependencies
 `python3 -m pip install flask-cors`
 `python3 -m pip install mysql-connector-python`
 
-Start the mysql instance
+Ensure db exists called "dubiousdb"
 Set the DB_PASS environment variable
 Start the backend app `python3 db.py`
 
