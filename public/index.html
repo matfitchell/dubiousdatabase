@@ -18,27 +18,30 @@
                 <form id="registerForm" class="row g-3">
                     <div class="col-md-6">
                       <label for="registerFirstName" class="form-label">First Name</label>
-                      <input type="text" class="form-control" id="registerFirstName">
+                      <input type="text" class="form-control" id="registerFirstName" required>
                     </div>
                     <div class="col-md-6">
                       <label for="registerLastName" class="form-label">Last Name</label>
-                      <input type="text" class="form-control" id="registerLastName">
+                      <input type="text" class="form-control" id="registerLastName" required>
                     </div>
                     <div class="col-12">
                       <label for="registerEmail" class="form-label">Email</label>
-                      <input type="email" class="form-control" id="registerEmail">
+                      <input type="email" class="form-control" id="registerEmail" required>
                     </div>
                     <div class="col-12">
                         <label for="registerUsername" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="registerUsername">
+                        <input type="text" class="form-control" id="registerUsername" required>
                     </div>
                     <div class="col-md-12">
                       <label for="registerPassword" class="form-label">Password</label>
-                      <input type="password" class="form-control" id="registerPassword">
+                      <input type="password" class="form-control" id="registerPassword" required>
                     </div>
                     <div class="col-md-12">
                       <label for="registerRePassword" class="form-label">Confirm Password</label>
-                      <input type="password" class="form-control" id="registerRePassword">
+                      <input type="password" class="form-control" id="registerRePassword" required>
+                      <div id="passwordError" class="invisible">
+                        Passwords do not match.
+                      </div>
                     </div>
                     <div class="col-md-12">
                       <button type="submit" class="btn btn-primary">
@@ -46,7 +49,7 @@
                       </button>
                     </div>
                   </form>
-                  <div style="margin-top: 20px;">
+                  <div style="margin: 20px 0 20px 0;">
                     Already have an account? 
                     <a id="loginLink" href="#" style="text-decoration: none;">
                         Login
@@ -69,7 +72,7 @@
                         </button>
                     </div>
                 </form>
-                <div style="margin-top: 20px;">
+                <div style="margin: 20px 0 20px 0;">
                     Don't have an account? 
                     <a id="registerLink" href="#" style="text-decoration: none;">
                         Register

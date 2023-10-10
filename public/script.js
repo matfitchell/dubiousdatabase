@@ -47,17 +47,17 @@ async function logoutClicked() {
     try {
         const response = await fetch(API + '/api/logout', {
             method: 'GET',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
         if (response.ok) {
+            let jsonObj = await response.json();
             setLoggedOut();
         }
         else {
-            console.log(response.body.message);
+            console.log("ERROR: Something went wrong.")
         }
     } catch (err) {
         console.log(err);
@@ -82,6 +82,7 @@ async function loginFormSubmit(e) {
 
         if (response.ok) {
             let jsonObj = await response.json();
+            resetErrorDiv();
             setLoggedIn(jsonObj.username);
         }
         else {
@@ -91,6 +92,7 @@ async function loginFormSubmit(e) {
 
     } catch (err) {
         console.log(err);
+        setLoggedOut();
     }
 }
 
@@ -99,45 +101,57 @@ async function registerFormSubmit(e) {
 
     let username = document.getElementById("registerUsername").value;
     let password = document.getElementById("registerPassword").value;
+    let passwordRe = document.getElementById("registerRePassword").value;
     let firstName = document.getElementById("registerFirstName").value;
     let lastName = document.getElementById("registerLastName").value;
     let email = document.getElementById("registerEmail").value;
 
-    let userObj = { 
-        username: username, 
-        password: password,
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-    };
+    let valid = true;
 
-    try {
-        const response = await fetch(API + "/api/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(userObj)
-        });
-
-        if (response.ok && response.json()["status"] == "success") {
-            console.log(response.json())
-            //User will have to log in once they sign up successfully.
-            setLoggedOut();
-        }
-        else {
-            let jsonObj = await response.json();
-            setErrorDiv(jsonObj.message);
-        }
-    } catch (err) {
-        console.log(err);
+    if (password !== passwordRe) {
+        setErrorDiv("Passwords do not match.")
+        valid = false;
+    }
+    else {
+        resetErrorDiv()
     }
 
-    displayLoginForm();
+    if (valid) {
+        let userObj = { 
+            username: username, 
+            password: password,
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+        };
+
+        try {
+            const response = await fetch(API + "/api/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(userObj)
+            });
+
+            if (response.ok) {
+                //User will have to log in once they sign up successfully.
+                setLoggedOut();
+            }
+            else {
+                let jsonObj = await response.json();
+                setErrorDiv(jsonObj.message);
+            }
+        } catch (err) {
+            console.log(err);
+            setLoggedOut();
+        }
+    }
 }
 
 //Sets screen to user view with logout button
 function setLoggedIn(username) {
+    resetErrorDiv() //clear any errors
     loginFormDiv.setAttribute("class", "invisible");
     welcomeDiv.setAttribute("class", "visible");
     document.getElementById("username").innerHTML = username;
@@ -145,6 +159,7 @@ function setLoggedIn(username) {
 
 //Sets screen to guest view; shows main navigation buttons
 function setLoggedOut() {
+    resetErrorDiv() //clear any errors
     welcomeDiv.setAttribute("class", "invisible");
     displayLoginForm();
     document.getElementById("username").innerHTML = "";
@@ -152,7 +167,7 @@ function setLoggedOut() {
 
 //Sets the error div to any error messages received
 function setErrorDiv(error) {
-    errorDiv.setAttribute("class", "text-bg-danger container p-3 col");
+    errorDiv.setAttribute("class", "alert alert-danger");
     errorDiv.innerHTML = error;
 }
 

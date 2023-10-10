@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import mysql.connector
 import os
 import hashlib
@@ -7,6 +7,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
 db = mysql.connector.connect(
   host="localhost",
   user="root",
@@ -14,63 +15,126 @@ db = mysql.connector.connect(
   database="dubiousdb"
 )
 
-def hash_password(password: str) -> bytes:
-  hashed = hashlib.pbkdf2_hmac("sha256", password.encode(), 110000)
-  return hashed
+cursor = db.cursor()
 
-def check_password(hashed: bytes, password: str) -> bool:
-  return hmac.compare_digest(hashed, hashlib.pbkdf2_hmac("sha256", password.encode(), 110000))
+# Drop user table if it exists
+cursor.execute("DROP TABLE IF EXISTS `user`")
 
-@app.route('/api/register', methods = ['POST'])
+# Create user table
+sqlCreate = """ 
+CREATE TABLE `user` (
+  `userName` varchar(255) NOT NULL,
+  `passWord` varbinary(255) NOT NULL,
+  `passSalt` varbinary(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `firstName` varchar(255) DEFAULT NULL,
+  `lastName` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`userName`),
+  UNIQUE KEY `userName_UNIQUE` (`userName`),
+  UNIQUE KEY `email_UNIQUE` (`email`)
+)
+"""
+cursor.execute(sqlCreate)
+
+def hash_password(password: str):
+  # Generates bytestring of 16 random bytes
+  salt = os.urandom(16)
+  hashed = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 110000)
+  return hashed, salt
+
+def check_password(hashed: bytes, password: str, salt: bytes) -> bool:
+  # Hash entered password with their salt
+  check_password_hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 110000)
+
+  if check_password_hash == hashed:
+    return True
+  else:
+    return False
+
+@app.route('/api/register', methods=['POST'])
 def register():
-  username = request.args.get('username', type = str)
-  password = request.args.get('password', type = str)
-  email = request.args.get('email', type = str)
-  first_name = request.args.get('first_name', type = str)
-  last_name = request.args.get('last_name', type = str)
+  username = request.json['username']
+  password = request.json['password']
+  email = request.json['email']
+  first_name = request.json['first_name']
+  last_name = request.json['last_name']
 
-  cursor = db.cursor()
-  hashed_password = hash_password(password)
+  # cursor = db.cursor()
+  hashed_password, salt = hash_password(password)
 
   try:
-    sql = "SElECT INTO user (userName, passWord, email, firstName, lastName) VALUES (%s, %s, %s, %s, %s)"
-    values = (username, hashed_password.hexdigest(), email, first_name, last_name)
+    sql = "INSERT INTO user (userName, passWord, passSalt, email, firstName, lastName) VALUES (%s, %s, %s, %s, %s, %s)"
+    values = (username, hashed_password, salt, email, first_name, last_name)
     cursor.execute(sql, values)
 
     db.commit()
   except Exception as e:
+    # Unique modifier prevents duplicate username/email
     print(e)
-    return "FAILED"
+    response = {
+      "status": "failed",
+      "message": "User already exists with username or email."
+    }
+    return jsonify(response), 401
 
-  print(f"{cursor.rowcount} record{"" if cursor.rowcount == 1 else "s"} inserted.")
-  return "SUCCESS"
+  print(f"{cursor.rowcount} record{'' if cursor.rowcount == 1 else 's'} inserted.")
+
+  response = {
+    "message": "User successfully registered."
+  }
+  return jsonify(response)
 
 @app.route('/api/login', methods=["POST"])
 def login():
-  username = request.args.get('username', type = str)
-  password = request.args.get('password', type = str)
+  username = request.json['username']
+  password = request.json['password']
 
-  cursor = db.cursor()
+  # cursor = db.cursor()
 
   try:
-    sql = "SElECT passWord FROM (user) WHERE userName=(\"%s\")"
-    values = (username)
+    sql = "SElECT passWord, passSalt FROM (user) WHERE userName= %s"
+    values = (username,)
     cursor.execute(sql, values)
-
-    db.commit()
+    
+    # Gets next row; there will only be 1 from sql query
+    result = cursor.fetchone()
+    
+    # No user with specified username
+    if result == None:
+      response = {
+        "message":"Invalid credentials. Please try again"
+      }
+      return jsonify(response), 401
+    
+    # Result in order of SELECT statement
+    db_password, db_salt = result
+    
+    if check_password(db_password, password, db_salt):
+      response = {
+        "username": username
+      }
+      return jsonify(response)
+    else:
+      # Password did not match for specified user
+      response = {
+        "message":"Invalid credentials. Please try again."
+      }
+      return jsonify(response), 401
+    
   except Exception as e:
     print(e)
-    return {"status":"failed", "error": "AN EXCEPTION OCCURED"}
-  if str(cursor) == None or password == None:
-    print("Username doesn't exist")
-    return {"status":"failed", "error": "INVALiD CREDENTIALS"}
-  status = "succeed" if check_password(str(cursor), password) else "failed"
-  print(status)
-  return {"status":status}
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response)
 
 @app.route('/api/logout')
 def logout():
-  return "Session closed", 401
+  response = {
+    "message":"Successfully logged out." 
+  }
+  return jsonify(response)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000)
