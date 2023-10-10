@@ -24,6 +24,7 @@ Open public/index.html
 Alisha A
 - Created the front-end page using HTML, CSS with Bootstrap, and Javascript for functionality.
 - Helped out with testing/implementing the backend functionality.
+- 
 Jonathan N
 - Set up the back-end web app
 - Created the routes (login, logout, and register) and password hashing.
