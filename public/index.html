@@ -92,30 +92,44 @@
             </div>
 
 			<!-- Insert Item Section -->
-			<div id="insertItemDiv" class="invisible">
-				<form id="insertItemForm" class="row g-3">
-                    <div class="col-12">
-                      <label for="itemTitle" class="form-label">Title</label>
-                      <input type="text" class="form-control" id="itemTitle" required>
-                    </div>
-                    <div class="col-12">
-                        <label for="itemDesc" class="form-label">Description</label>
-                        <input type="text" class="form-control" id="itemDesc" required>
-                    </div>
-                    <div class="col-md-12">
-                      <label for="itemCategory" class="form-label">Category</label>
-                      <input type="text" class="form-control" id="itemCatagory" required>
-                    </div>
-                    <div class="input-group mb-3">
-						<span class="input-group-text">$</span>
-                      	<input type="text" class="form-control" id="itemPrice" required>
-                    </div>
-                    <div class="col-md-12">
-                      <button type="submit" class="btn btn-primary">
-                        Insert
-                      </button>
-                    </div>
-                  </form>
+        	<div id="insertItemDiv" class="invisible">
+            	<form id="insertItemForm" class="row g-3">
+                        <div class="col-12">
+                          <label for="itemTitle" class="form-label">Title</label>
+                          <input type="text" class="form-control" id="itemTitle" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="itemDesc" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="itemDesc" required>
+                        </div>
+                        <div class="col-md-12">
+                          <label for="itemCategory" class="form-label">Category</label>
+                          <input type="text" class="form-control" id="itemCatagory" required>
+                        </div>
+                        <div class="input-group mb-3">
+                			<span class="input-group-text">$</span>
+                            <input type="text" class="form-control" id="itemPrice" required>
+                        </div>
+                        <div class="col-md-12">
+                          <button type="submit" class="btn btn-primary">
+							Insert
+                          </button>
+                        </div>
+        		</form>
+          	</div>
+
+			<!-- Search Items Section -->
+			<div id="searchItemDiv">
+					<div class="input-group mb-3">
+						<span class="input-group-text">
+							<!-- Search Icon -->
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+							<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+							</svg>
+						</span>
+						<input type="text" class="form-control" id="searchString" placeholder="Type a category...">
+						<button id="searchBtn" class="btn btn-primary">Search</button>
+					</div>
 			</div>
 
             <!-- Errors displayed here -->
