@@ -149,6 +149,62 @@ async function registerFormSubmit(e) {
     }
 }
 
+async function initializeDb() {
+    try {
+        const response = await fetch(API + "/api/initializeDb", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+
+        if (!response.ok) {
+            let jsonObj = await response.json();
+            setErrorDiv(jsonObj.message);
+        }
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function insertItem(e) {
+    e.preventDefault();
+    
+    let itemTitle = document.getElementById("itemTitle").value;
+    let itemDesc = document.getElementById("itemDesc").value;
+    let itemCategory = document.getElementById("itemCategory").value;
+    let itemPrice = document.getElementById("itemPrice").value;
+
+    let itemObj = {
+        itemTitle: itemTitle,
+        itemDesc: itemDesc,
+        itemCategory: itemCategory,
+        itemPrice: itemPrice,
+    };
+
+    try {
+        const response = await fetch(API + "/api/insertItem", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(itemObj)
+        });
+
+        let jsonObj = await response.json();
+        if (response.ok) {
+            //Show success message?
+        }
+        else {
+            setErrorDiv(jsonObj.message);
+        }
+
+    } catch (err) {
+        console.log(err)
+    }
+}
+
 //Sets screen to user view with logout button
 function setLoggedIn(username) {
     resetErrorDiv() //clear any errors
