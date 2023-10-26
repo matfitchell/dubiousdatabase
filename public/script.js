@@ -1,44 +1,33 @@
-let loginFormDiv;
-let registerFormDiv;
-let errorDiv;
-let welcomeDiv;
-let loginForm;
-let registerForm;
-
 const API = "http://localhost:5000"
 
 function start() {
-    loginFormDiv = document.getElementById("loginFormDiv");
-    registerFormDiv = document.getElementById("registerFormDiv");
-    errorDiv = document.getElementById("errorDiv");
-    welcomeDiv = document.getElementById("welcomeDiv")
+    const registerLink = getElementById("registerLink");
+    const loginLink = getElementById("loginLink");
+    const logoutBtn = getElementById("logoutBtn");
 
-    const registerLink = document.getElementById("registerLink");
     registerLink.addEventListener("click", displayRegisterForm);
-
-    const loginLink = document.getElementById("loginLink");
     loginLink.addEventListener("click", displayLoginForm);
+    logoutBtn.addEventListener("click", logoutClicked)
 
-    loginForm = document.getElementById("loginForm");
-    registerForm = document.getElementById("registerForm");
+    const loginForm = getElementById("loginForm");
+    const registerForm = getElementById("registerForm");
 
     loginForm.addEventListener("submit", loginFormSubmit);
     registerForm.addEventListener("submit", registerFormSubmit);
-
-    const logoutBtn = document.getElementById("logoutBtn");
-    logoutBtn.addEventListener("click", logoutClicked)
 }
 
 function displayLoginForm() {
-    loginForm.reset();  //clear form
-    registerFormDiv.setAttribute("class", "invisible");
-    loginFormDiv.setAttribute("class", "visible");
+    resetErrorDiv();
+    getElementById("loginForm").reset();  //clear form
+    hide(getElementById("registerFormDiv"));
+    display(getElementById("loginFormDiv"));
 }
 
 function displayRegisterForm() {
-    registerForm.reset();   //clear form
-    loginFormDiv.setAttribute("class", "invisible");
-    registerFormDiv.setAttribute("class", "visible");
+    resetErrorDiv();
+    getElementById("registerForm").reset();  //clear form
+    hide(getElementById("loginFormDiv"));
+    display(getElementById("registerFormDiv"));
 }
 
 async function logoutClicked() {
@@ -52,9 +41,11 @@ async function logoutClicked() {
             }
         });
 
+        let jsonObj = await response.json();
+
         if (response.ok) {
-            let jsonObj = await response.json();
             setLoggedOut();
+            console.log(jsonObj.message);
         }
         else {
             console.log("ERROR: Something went wrong.")
@@ -236,29 +227,42 @@ async function searchItems() {
 //Sets screen to user view with logout button
 function setLoggedIn(username) {
     resetErrorDiv() //clear any errors
-    loginFormDiv.setAttribute("class", "invisible");
-    welcomeDiv.setAttribute("class", "visible");
-    document.getElementById("username").innerHTML = username;
+    hide(getElementById("loginFormDiv"));
+    display(getElementById("welcomeDiv"));
+    getElementById("username").innerHTML = username;
 }
 
 //Sets screen to guest view; shows main navigation buttons
 function setLoggedOut() {
     resetErrorDiv() //clear any errors
-    welcomeDiv.setAttribute("class", "invisible");
+    hide(getElementById("welcomeDiv"));
     displayLoginForm();
-    document.getElementById("username").innerHTML = "";
+    getElementById("username").innerHTML = "";
 }
 
 //Sets the error div to any error messages received
 function setErrorDiv(error) {
-    errorDiv.setAttribute("class", "alert alert-danger");
-    errorDiv.innerHTML = error;
+    getElementById("errorDiv").setAttribute("class", "alert alert-danger");
+    getElementById("errorDiv").innerHTML = error;
 }
 
 //Hides error div and resets innerHTML content
 function resetErrorDiv() {
-    errorDiv.setAttribute("class", "invisible")
-    errorDiv.innerHTML = "";
+    hide(getElementById("errorDiv"));
+    getElementById("errorDiv").innerHTML = "";
+}
+
+//Simplify getting elements
+function getElementById(id) {
+    return document.getElementById(id);
+}
+
+function hide(element) {
+    element.setAttribute("class", "invisible");
+}
+
+function display(element) {
+    element.setAttribute("class", "visible");
 }
 
 window.addEventListener("load", start);
