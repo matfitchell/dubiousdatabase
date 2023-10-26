@@ -83,43 +83,46 @@
                   </div>
             </div>
 
-			<!-- Welcome Section -->
-            <div id="welcomeDiv" class="invisible">
+			<!-- User Welcome Page -->
+            <div id="welcomeDiv" class="visible">
                 <h3>
                     Welcome, <span id="username">User</span>.
                 </h3>
-                <button id="logoutBtn" class="btn btn-danger" style="margin-top: 50px;">Logout</button>
-            </div>
+				<div id="navBtnDiv" style="margin-top: 50px;">
+					<button id="initialDbNavBtn" class="btn btn-primary">Initialize Database</button>
+					<button id="insertNavBtn" class="btn btn-primary">Insert Item</button>
+					<button id="searchNavBtn" class="btn btn-primary">Search Items</button>
+				</div>
 
-			<!-- Insert Item Section -->
-        	<div id="insertItemDiv" class="invisible">
-            	<form id="insertItemForm" class="row g-3">
-                        <div class="col-12">
-                          <label for="itemTitle" class="form-label">Title</label>
-                          <input type="text" class="form-control" id="itemTitle" required>
-                        </div>
-                        <div class="col-12">
-                            <label for="itemDesc" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="itemDesc" required>
-                        </div>
-                        <div class="col-md-12">
-                          <label for="itemCategory" class="form-label">Category</label>
-                          <input type="text" class="form-control" id="itemCatagory" required>
-                        </div>
-                        <div class="input-group mb-3">
-                			<span class="input-group-text">$</span>
-                            <input type="text" class="form-control" id="itemPrice" required>
-                        </div>
-                        <div class="col-md-12">
-                          <button type="submit" class="btn btn-primary">
-							Insert
-                          </button>
-                        </div>
-        		</form>
-          	</div>
+				<!-- Insert Item Section -->
+				<div id="insertItemDiv" style="margin-top: 50px;" class="invisible">
+					<form id="insertItemForm" class="row g-3">
+							<div class="col-12">
+							  <label for="itemTitle" class="form-label">Title</label>
+							  <input type="text" class="form-control" id="itemTitle" required>
+							</div>
+							<div class="col-12">
+								<label for="itemDesc" class="form-label">Description</label>
+								<input type="text" class="form-control" id="itemDesc" required>
+							</div>
+							<div class="col-md-12">
+							  <label for="itemCategory" class="form-label">Category</label>
+							  <input type="text" class="form-control" id="itemCatagory" required>
+							</div>
+							<div class="input-group mb-3">
+								<span class="input-group-text">$</span>
+								<input type="text" class="form-control" id="itemPrice" required>
+							</div>
+							<div class="col-md-12">
+							  <button type="submit" class="btn btn-primary">
+								Insert
+							  </button>
+							</div>
+					</form>
+				</div>
 
-			<!-- Search Items Section -->
-			<div id="searchItemDiv">
+				<!-- Search Items Section -->
+				<div id="searchItemDiv" style="margin-top: 50px;" class="invisible">
 					<div class="input-group mb-3">
 						<span class="input-group-text">
 							<!-- Search Icon -->
@@ -130,7 +133,14 @@
 						<input type="text" class="form-control" id="searchString" placeholder="Type a category...">
 						<button id="searchBtn" class="btn btn-primary">Search</button>
 					</div>
-			</div>
+				</div>
+
+				
+
+
+				<button id="logoutBtn" class="btn btn-danger" style="margin-top: 50px;">Logout</button>
+            </div>
+
 
             <!-- Errors displayed here -->
             <div id="errorDiv" class="invisible"></div>
