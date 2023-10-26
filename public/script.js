@@ -257,6 +257,7 @@ function getElementById(id) {
     return document.getElementById(id);
 }
 
+//Helper functions to hide/display elements
 function hide(element) {
     element.setAttribute("class", "invisible");
 }
