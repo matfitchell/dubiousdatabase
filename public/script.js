@@ -205,6 +205,34 @@ async function insertItem(e) {
     }
 }
 
+async function searchItems() {
+    let searchString = document.getElementById("searchString").value;
+    // Create params to append to request url
+    let params = new URLSearchParams ({
+        term: searchString
+    })
+
+    try {
+        const response = await fetch(API + `/api/search?${params}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        let jsonData = await response.json();
+        if (response.ok) {
+            // parse data into list
+        }
+        else {
+            setErrorDiv(jsonData.message);
+        }
+
+    } catch (err) {
+        console.log(err)
+    }
+}
+
 //Sets screen to user view with logout button
 function setLoggedIn(username) {
     resetErrorDiv() //clear any errors
