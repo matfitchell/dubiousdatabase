@@ -14,6 +14,9 @@ function start() {
 
     loginForm.addEventListener("submit", loginFormSubmit);
     registerForm.addEventListener("submit", registerFormSubmit);
+
+    const searchBtn = getElementById("searchNavBtn");
+    searchBtn.addEventListener("click", searchItems);
 }
 
 function displayLoginForm() {
@@ -197,31 +200,99 @@ async function insertItem(e) {
 }
 
 async function searchItems() {
-    let searchString = document.getElementById("searchString").value;
-    // Create params to append to request url
-    let params = new URLSearchParams ({
-        term: searchString
-    })
+    // let searchString = document.getElementById("searchString").value;
+    // // Create params to append to request url
+    // let params = new URLSearchParams ({
+    //     term: searchString
+    // })
 
-    try {
-        const response = await fetch(API + `/api/search?${params}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
+    // try {
+    //     const response = await fetch(API + `/api/search?${params}`, {
+    //         method: "GET",
+    //         headers: {
+    //             "Content-Type": "application/json"
+    //         }
+    //     });
+
+    //     let jsonData = await response.json();
+    //     if (response.ok) {
+    //         // parse data into list
+    //     }
+    //     else {
+    //         setErrorDiv(jsonData.message);
+    //     }
+
+    // } catch (err) {
+    //     console.log(err)
+    // }
+
+    const testData = [
+        {
+            id: 1,
+            title: "Item 1",
+            desc: "Description for Item 1",
+            price: 19.99,
+            categories: ["Category A", "Category B"]
+        },
+        {
+            id: 2,
+            title: "Item 2",
+            desc: "Description for Item 2",
+            price: 29.99,
+            categories: ["Category B", "Category C"]
+        },
+        {
+            id: 3,
+            title: "Item 3",
+            desc: "Description for Item 3",
+            price: 39.99,
+            categories: ["Category A", "Category C"]
+        },
+        // Add more test objects as needed
+    ];
+
+    console.log(testData);
+    displaySearchResult(testData);
+}
+
+async function displaySearchResult(result) {
+    let listContainer = getElementById("listContainer");
+    //Clear previous list contents before displaying new list
+    listContainer.innerHTML = "";
+
+    //Loop through each item in result and create a list item for it.
+    result.forEach(item => {
+        const itemElem = document.createElement("li");
+        itemElem.id = `${item.id}`;
+        itemElem.className = "list-group-item list-group-item-action";
+
+        //Set innerHTML details
+        itemElem.innerHTML = `<h6>Title: <span>${item.title}</span></h6>
+        Description: <span>${item.desc}</span>
+        <br>
+        Price: $<span>${item.price}</span>
+        <br>
+        Categories: `;
+
+        //Put categories in spans with specific bootstrap classes.
+        item.categories.forEach(category => {
+            const categoryElem = document.createElement("span");
+            categoryElem.className = "badge text-bg-secondary";
+            categoryElem.innerHTML = category;
+            //Append category span to the current list item
+            itemElem.appendChild(categoryElem);
+            itemElem.innerHTML += " ";
         });
 
-        let jsonData = await response.json();
-        if (response.ok) {
-            // parse data into list
-        }
-        else {
-            setErrorDiv(jsonData.message);
-        }
-
-    } catch (err) {
-        console.log(err)
-    }
+        itemElem.addEventListener("click", () => {
+            //Create a review form here for the current list item
+            //Will popup when user clicks on the list item
+            console.log(`Item: ${item.id} has been clicked`);
+        });
+        
+        //Append the list item to the list container
+        listContainer.appendChild(itemElem);
+    });
 }
 
 //Sets screen to user view with logout button

@@ -9,6 +9,7 @@
             .container { margin-top: 50px; max-width: 50%; }
             .visible { display: block; }
             .invisible { display: none; }
+			.btn { margin-top: 5px;}
         </style>
     </head>
     <body>
@@ -84,7 +85,7 @@
             </div>
 
 			<!-- User Welcome Page -->
-            <div id="welcomeDiv" class="invisible">
+            <div id="welcomeDiv" class="visible">
                 <h3>
                     Welcome, <span id="username">User</span>.
                 </h3>
@@ -92,6 +93,7 @@
 					<button id="initialDbNavBtn" class="btn btn-primary">Initialize Database</button>
 					<button id="insertNavBtn" class="btn btn-primary">Insert Item</button>
 					<button id="searchNavBtn" class="btn btn-primary">Search Items</button>
+					<button id="logoutBtn" class="btn btn-danger">Logout</button>
 				</div>
 
 				<!-- Insert Item Section -->
@@ -135,10 +137,23 @@
 					</div>
 				</div>
 
-				
-
-
-				<button id="logoutBtn" class="btn btn-danger" style="margin-top: 50px;">Logout</button>
+				<div id="itemDisplayDiv" style="margin-top: 50px; margin-bottom: 100px;">
+					<ul id="listContainer" class="list-group">
+						<!-- Template for list item -->
+						<li class="list-group-item list-group-item-action">
+							<h6>Title: <span>Smartphone</span></h6>
+							Description: <span>This is the new iPhone X.</span>
+							<br>
+							Categories:
+							<span class="badge text-bg-secondary">electronic</span>
+							<span class="badge text-bg-secondary">cellphone</span>
+							<span class="badge text-bg-secondary">apple</span>
+							<br>
+							Price: $<span>1000.00</span>
+						</li>
+					</ul>
+				</div>
+				  
             </div>
 
 
