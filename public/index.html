@@ -10,6 +10,7 @@
             .visible { display: block; }
             .invisible { display: none; }
 			.btn { margin-top: 5px;}
+			#listContainer { max-height: 600px; overflow-y: auto; }
         </style>
     </head>
     <body>
@@ -137,12 +138,12 @@
 					</div>
 				</div>
 
-				<div id="itemReviewDiv" style="display: none; margin-top: 50px;">
+				<div id="itemReviewDiv" style="margin-top: 50px;" class="invisible">
 					<h5 style="margin-bottom: 20px;">Write a Review</h6>
 					<form id="itemReviewForm" class="row g-3">
 						<div class="input-group">
 							<span class="input-group-text">Item Name</span>
-							<input id="itemNameReviewForm" type="text" value="An item name" class="form-control" disabled>
+							<input id="itemReviewFormName" type="text" value="An item name" class="form-control" disabled>
 						</div>
 						<div class="col-12">
 							<label class="visually-hidden" for="itemRating">Rating</label>
@@ -159,6 +160,7 @@
 							<textarea id="itemReviewDesc" class="form-control"></textarea>
 						</div>
 						<div class="col-md-12">
+							<button id="cancelReviewBtn" class="btn btn-secondary">Cancel</button>
 						  <button type="submit" class="btn btn-primary">
 							Submit Review
 						  </button>
