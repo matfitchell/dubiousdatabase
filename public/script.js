@@ -4,7 +4,7 @@ function start() {
     const registerLink = getElementById("registerLink");
     const loginLink = getElementById("loginLink");
     const logoutBtn = getElementById("logoutBtn");
-
+    
     registerLink.addEventListener("click", displayRegisterForm);
     loginLink.addEventListener("click", displayLoginForm);
     logoutBtn.addEventListener("click", logoutClicked)
@@ -15,8 +15,22 @@ function start() {
     loginForm.addEventListener("submit", loginFormSubmit);
     registerForm.addEventListener("submit", registerFormSubmit);
 
+
+    //Form search button
     const searchBtn = getElementById("searchNavBtn");
     searchBtn.addEventListener("click", searchItems);
+
+    const cancelReviewBtn = getElementById("cancelReviewBtn");
+    cancelReviewBtn.addEventListener("click", closeReviewDiv);
+}
+
+function closeReviewDiv(e) {
+    //Prevent button from resetting page
+    //reset will cause item list to disappear.
+    e.preventDefault();
+
+    getElementById("itemReviewForm").reset();
+    hide(getElementById("itemReviewDiv"));
 }
 
 function displayLoginForm() {
@@ -248,6 +262,41 @@ async function searchItems() {
             price: 39.99,
             categories: ["Category A", "Category C"]
         },
+        {
+            id: 2,
+            title: "Item 2",
+            desc: "Description for Item 2",
+            price: 29.99,
+            categories: ["Category B", "Category C"]
+        },
+        {
+            id: 3,
+            title: "Item 3",
+            desc: "Description for Item 3",
+            price: 39.99,
+            categories: ["Category A", "Category C"]
+        },
+        {
+            id: 2,
+            title: "Item 2",
+            desc: "Description for Item 2",
+            price: 29.99,
+            categories: ["Category B", "Category C"]
+        },
+        {
+            id: 3,
+            title: "Item 3",
+            desc: "Description for Item 3",
+            price: 39.99,
+            categories: ["Category A", "Category C"]
+        },
+        {
+            id: 2,
+            title: "Item 2",
+            desc: "Description for Item 2",
+            price: 29.99,
+            categories: ["Category B", "Category C"]
+        },
         // Add more test objects as needed
     ];
 
@@ -285,8 +334,10 @@ async function displaySearchResult(result) {
         });
 
         itemElem.addEventListener("click", () => {
-            //Create a review form here for the current list item
-            //Will popup when user clicks on the list item
+            //Display a review form above for the current list item
+            getElementById("itemReviewFormName").setAttribute("value", `${item.title}`);
+            display(getElementById("itemReviewDiv"));
+
             console.log(`Item: ${item.id} has been clicked`);
         });
         
