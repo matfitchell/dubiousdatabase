@@ -137,6 +137,35 @@
 					</div>
 				</div>
 
+				<div id="itemReviewDiv" style="display: none; margin-top: 50px;">
+					<h5 style="margin-bottom: 20px;">Write a Review</h6>
+					<form id="itemReviewForm" class="row g-3">
+						<div class="input-group">
+							<span class="input-group-text">Item Name</span>
+							<input id="itemNameReviewForm" type="text" value="An item name" class="form-control" disabled>
+						</div>
+						<div class="col-12">
+							<label class="visually-hidden" for="itemRating">Rating</label>
+							<select class="form-select" id="itemRating">
+								<option selected>Choose a Rating</option>
+								<option value="excellent">Excellent</option>
+								<option value="good">Good</option>
+								<option value="fair">Fair</option>
+								<option value="poor">Poor</option>
+							</select>
+						</div>
+						<div class="input-group">
+							<span class="input-group-text">Review Description</span>
+							<textarea id="itemReviewDesc" class="form-control"></textarea>
+						</div>
+						<div class="col-md-12">
+						  <button type="submit" class="btn btn-primary">
+							Submit Review
+						  </button>
+						</div>
+					</form>
+				</div>
+
 				<div id="itemDisplayDiv" style="margin-top: 50px; margin-bottom: 100px;">
 					<ul id="listContainer" class="list-group">
 						<!-- Template for list item -->
