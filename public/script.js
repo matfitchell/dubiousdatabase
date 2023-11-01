@@ -1,3 +1,5 @@
+let user = "";
+
 const API = "http://localhost:5000"
 
 function start() {
@@ -30,56 +32,6 @@ function start() {
 
     searchBtn.addEventListener("click", searchItems);
     cancelReviewBtn.addEventListener("click", closeReviewDivBtn);
-}
-
-function closeReviewDivBtn(e) {
-    //Prevent button from resetting page
-    //reset will cause item list to disappear.
-    e.preventDefault();
-
-    closeReviewDiv();
-}
-
-function closeReviewDiv() {
-    resetErrorDiv();
-    getElementById("itemReviewForm").reset();
-    hide(getElementById("itemReviewDiv"));
-}
-
-function displaySearchBar() {
-    resetErrorDiv();
-    getElementById("listContainer").innerHTML = "";
-    hide(getElementById("insertItemDiv"));
-    display(getElementById("searchItemDiv"));
-}
-
-function displayInsertForm() {
-    resetErrorDiv();
-    getElementById("insertItemForm").reset();
-    hide(getElementById("searchItemDiv"));
-    display(getElementById("insertItemDiv"));
-}
-
-function displayLoginForm() {
-    resetErrorDiv();
-    getElementById("loginForm").reset();  //clear form
-    hide(getElementById("registerFormDiv"));
-    display(getElementById("loginFormDiv"));
-}
-
-function displayRegisterForm() {
-    resetErrorDiv();
-    getElementById("registerForm").reset();  //clear form
-    hide(getElementById("loginFormDiv"));
-    display(getElementById("registerFormDiv"));
-}
-
-function resetUserPage() {
-    resetErrorDiv();
-    getElementById("listContainer").innerHTML = "";
-    closeReviewDiv();
-    hide(getElementById("searchItemDiv"));
-    hide(getElementById("insertItemDiv"));
 }
 
 async function logoutClicked() {
@@ -196,22 +148,22 @@ async function initializeDb(e) {
     e.preventDefault();
     resetUserPage();
 
-    // try {
-    //     const response = await fetch(API + "/api/initializeDb", {
-    //         method: "GET",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //         }
-    //     });
+    try {
+        const response = await fetch(API + "/api/initializeDb", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
 
-    //     if (!response.ok) {
-    //         let jsonObj = await response.json();
-    //         setErrorDiv(jsonObj.message);
-    //     }
+        if (!response.ok) {
+            let jsonObj = await response.json();
+            setErrorDiv(jsonObj.message);
+        }
 
-    // } catch (err) {
-    //     console.log(err);
-    // }
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 async function insertItem(e) {
@@ -256,93 +208,93 @@ async function searchItems(e) {
     e.preventDefault();
     closeReviewDiv();
 
-    // let searchString = document.getElementById("searchString").value;
-    // // Create params to append to request url
-    // let params = new URLSearchParams ({
-    //     term: searchString
-    // })
+    let searchString = document.getElementById("searchString").value;
+    // Create params to append to request url
+    let params = new URLSearchParams ({
+        term: searchString
+    })
 
-    // try {
-    //     const response = await fetch(API + `/api/search?${params}`, {
-    //         method: "GET",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         }
-    //     });
+    try {
+        const response = await fetch(API + `/api/search?${params}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
 
-    //     let jsonData = await response.json();
-    //     if (response.ok) {
-    //         displaySearchResult(jsonData.items);
-    //     }
-    //     else {
-    //         setErrorDiv(jsonData.message);
-    //     }
+        let jsonData = await response.json();
+        if (response.ok) {
+            displaySearchResult(jsonData.items);
+        }
+        else {
+            setErrorDiv(jsonData.message);
+        }
 
-    // } catch (err) {
-    //     console.log(err)
-    // }
+    } catch (err) {
+        console.log(err)
+    }
 
-    const testData = [
-        {
-            id: 1,
-            title: "Item 1",
-            desc: "Description for Item 1",
-            price: 19.99,
-            categories: ["Category A", "Category B"]
-        },
-        {
-            id: 2,
-            title: "Item 2",
-            desc: "Description for Item 2",
-            price: 29.99,
-            categories: ["Category B", "Category C"]
-        },
-        {
-            id: 3,
-            title: "Item 3",
-            desc: "Description for Item 3",
-            price: 39.99,
-            categories: ["Category A", "Category C"]
-        },
-        {
-            id: 2,
-            title: "Item 2",
-            desc: "Description for Item 2",
-            price: 29.99,
-            categories: ["Category B", "Category C"]
-        },
-        {
-            id: 3,
-            title: "Item 3",
-            desc: "Description for Item 3",
-            price: 39.99,
-            categories: ["Category A", "Category C"]
-        },
-        {
-            id: 2,
-            title: "Item 2",
-            desc: "Description for Item 2",
-            price: 29.99,
-            categories: ["Category B", "Category C"]
-        },
-        {
-            id: 3,
-            title: "Item 3",
-            desc: "Description for Item 3",
-            price: 39.99,
-            categories: ["Category A", "Category C"]
-        },
-        {
-            id: 2,
-            title: "Item 2",
-            desc: "Description for Item 2",
-            price: 29.99,
-            categories: ["Category B", "Category C"]
-        },
-        // Add more test objects as needed
-    ];
+    // const testData = [
+    //     {
+    //         id: 1,
+    //         title: "Item 1",
+    //         desc: "Description for Item 1",
+    //         price: 19.99,
+    //         categories: ["Category A", "Category B"]
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Item 2",
+    //         desc: "Description for Item 2",
+    //         price: 29.99,
+    //         categories: ["Category B", "Category C"]
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Item 3",
+    //         desc: "Description for Item 3",
+    //         price: 39.99,
+    //         categories: ["Category A", "Category C"]
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Item 2",
+    //         desc: "Description for Item 2",
+    //         price: 29.99,
+    //         categories: ["Category B", "Category C"]
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Item 3",
+    //         desc: "Description for Item 3",
+    //         price: 39.99,
+    //         categories: ["Category A", "Category C"]
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Item 2",
+    //         desc: "Description for Item 2",
+    //         price: 29.99,
+    //         categories: ["Category B", "Category C"]
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Item 3",
+    //         desc: "Description for Item 3",
+    //         price: 39.99,
+    //         categories: ["Category A", "Category C"]
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Item 2",
+    //         desc: "Description for Item 2",
+    //         price: 29.99,
+    //         categories: ["Category B", "Category C"]
+    //     },
+    //     // Add more test objects as needed
+    // ];
 
-    displaySearchResult(testData);
+    // displaySearchResult(testData);
 }
 
 //Takes list of json objects
@@ -391,45 +343,98 @@ async function displaySearchResult(result) {
 async function itemReviewFormSubmit(e) {
     e.preventDefault();
 
-    let user = getElementById("username").textContent;
+    let username = user;
     let itemId = getElementById("itemToReviewId").value;
     let itemRating = getElementById("itemRating").value;
     let reviewDesc = getElementById("itemReviewDesc").value;
 
 
     let reviewObj = {
-        username: user,
+        username: username,
         itemId: itemId,
         rating: itemRating,
         desc: reviewDesc,
     }
 
-    // try {
-    //     const response = await fetch(API + "/api/reviewItem", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify(reviewObj)
-    //     });
+    try {
+        const response = await fetch(API + "/api/reviewItem", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(reviewObj)
+        });
 
-    //     let jsonObj = await response.json();
-    //     if (response.ok) {
-    //         //close form
-    //         closeReviewDiv();
-    //     }
-    //     else {
-    //         setErrorDiv(jsonObj.message);
-    //     }
+        let jsonObj = await response.json();
+        if (response.ok) {
+            //close form
+            closeReviewDiv();
+        }
+        else {
+            setErrorDiv(jsonObj.message);
+        }
 
-    // } catch (err) {
-    //     console.log(err)
-    // }
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+// HELPER FUNCTIONS BELOW
+function closeReviewDivBtn(e) {
+    //Prevent button from resetting page
+    //reset will cause item list to disappear.
+    e.preventDefault();
+
+    closeReviewDiv();
+}
+
+function closeReviewDiv() {
+    resetErrorDiv();
+    getElementById("itemReviewForm").reset();
+    hide(getElementById("itemReviewDiv"));
+}
+
+function displaySearchBar() {
+    resetErrorDiv();
+    getElementById("listContainer").innerHTML = "";
+    hide(getElementById("insertItemDiv"));
+    display(getElementById("searchItemDiv"));
+}
+
+function displayInsertForm() {
+    resetErrorDiv();
+    getElementById("insertItemForm").reset();
+    hide(getElementById("searchItemDiv"));
+    display(getElementById("insertItemDiv"));
+}
+
+function displayLoginForm() {
+    resetErrorDiv();
+    getElementById("loginForm").reset();  //clear form
+    hide(getElementById("registerFormDiv"));
+    display(getElementById("loginFormDiv"));
+}
+
+function displayRegisterForm() {
+    resetErrorDiv();
+    getElementById("registerForm").reset();  //clear form
+    hide(getElementById("loginFormDiv"));
+    display(getElementById("registerFormDiv"));
+}
+
+function resetUserPage() {
+    resetErrorDiv();
+    getElementById("listContainer").innerHTML = "";
+    closeReviewDiv();
+    hide(getElementById("searchItemDiv"));
+    hide(getElementById("insertItemDiv"));
 }
 
 //Sets screen to user view with logout button
 function setLoggedIn(username) {
     resetErrorDiv() //clear any errors
+
+    user = username;
     hide(getElementById("loginFormDiv"));
     display(getElementById("welcomeDiv"));
     getElementById("username").innerHTML = username;
@@ -438,6 +443,8 @@ function setLoggedIn(username) {
 //Sets screen to guest view; shows main navigation buttons
 function setLoggedOut() {
     resetErrorDiv() //clear any errors
+    
+    user = "";
     hide(getElementById("welcomeDiv"));
     displayLoginForm();
     getElementById("username").innerHTML = "";
