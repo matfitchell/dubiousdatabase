@@ -347,35 +347,44 @@ async function itemReviewFormSubmit(e) {
     let itemId = getElementById("itemToReviewId").value;
     let itemRating = getElementById("itemRating").value;
     let reviewDesc = getElementById("itemReviewDesc").value;
+    let valid = true;
 
-
-    let reviewObj = {
-        username: username,
-        itemId: itemId,
-        rating: itemRating,
-        desc: reviewDesc,
+    if (itemRating == "Choose a Rating") {
+        setErrorDiv("Please select a rating.");
+        value = false;
+    } else {
+        resetErrorDiv();
     }
 
-    try {
-        const response = await fetch(API + "/api/reviewItem", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(reviewObj)
-        });
-
-        let jsonObj = await response.json();
-        if (response.ok) {
-            //close form
-            closeReviewDiv();
+    if (valid) {
+        let reviewObj = {
+            username: username,
+            itemId: itemId,
+            rating: itemRating,
+            desc: reviewDesc,
         }
-        else {
-            setErrorDiv(jsonObj.message);
+    
+        try {
+            const response = await fetch(API + "/api/reviewItem", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(reviewObj)
+            });
+    
+            let jsonObj = await response.json();
+            if (response.ok) {
+                //close form
+                closeReviewDiv();
+            }
+            else {
+                setErrorDiv(jsonObj.message);
+            }
+    
+        } catch (err) {
+            console.log(err)
         }
-
-    } catch (err) {
-        console.log(err)
     }
 }
 
