@@ -45,7 +45,8 @@ CREATE TABLE `item` (
   `item` varchar(255) NOT NULL,
   `description` varbinary(255) NOT NULL,
   `catagory` varbinary(255) NOT NULL,
-  `price` decimal(5, 2)
+  `price` decimal(5, 2),
+  `placedDate` DATETIME NOT NULL
 )
 """
 cursor.execute(sqlCreate)
@@ -157,22 +158,52 @@ if __name__ == '__main__':
 
 @app.route('/api/insertItem', methods=['POST'])
 def insertItem():
-  item = request.json['item']
-  description  = request.json['description']
-  catagory = request.json['catagory']
-  price = request.json['price']
-
+  username = request.json['username']
+  itemTitle = request.json['itemTitle']
+  itemDesc  = request.json['itemDesc']
+  itemCategory = request.json['itemCategory']
+  itemPrice = request.json['itemPrice']
+  placeDate = datetime.today()
 
   try:
-    sql = "INSERT INTO item (item, description, catagory, price) VALUES (%s, %s, %s, %.2f)"
-    values = (item, description, catagory, price) 
+    sql = "INSERT INTO item (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %.2f, %d)"
+    values = (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) 
     cursor.execute(sql, values)
 
   except Exception as e:
     print(e)
-  
-    response = {
-        "status":"failed", 
-        "error":"AN EXCEPTION OCCURED." 
-      }
+    
+
+  try:
+    sql = "SELECT FROM item(SELECT COUNT('username') VALUES (%d)"
+    print(sql)
+    num = cursor.execute(sql)
+
+  except Exception as e:
+    print(e)
+
+    # #TODO LIMIT TO 3 A DAY BY SEARCHING USERNAME AND POLLING RESULTS 
+    # try:
+
+      
+    #   sql = "INSERT INTO item (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %.2f, %d)"
+    #   values = (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) 
+    #   cursor.execute(sql, values)
+
+    # except Exception as e:
+    #   print(e)
+    
+      # response = {
+      #     "status":"failed", 
+      #     "error":"AN EXCEPTION OCCURED." 
+      #   }
     return jsonify(response)
+
+
+@app.route('/api/search', methods=['POST'])
+def search():
+  title = request.json['title']
+  desc  = request.json['desc']
+  price = request.json['price']
+  categories = request.json['categories']
+
