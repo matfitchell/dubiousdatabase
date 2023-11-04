@@ -20,10 +20,12 @@ function start() {
     const loginForm = getElementById("loginForm");
     const registerForm = getElementById("registerForm");
     const itemReviewForm = getElementById("itemReviewForm");
+    const insertItemForm = getElementById("insertItemForm");
 
     loginForm.addEventListener("submit", loginFormSubmit);
     registerForm.addEventListener("submit", registerFormSubmit);
     itemReviewForm.addEventListener("submit", itemReviewFormSubmit);
+    insertItemForm.addEventListener("submit", insertItemFormSubmit);
 
 
     //Form search button
@@ -166,7 +168,7 @@ async function initializeDb(e) {
     }
 }
 
-async function insertItem(e) {
+async function insertItemFormSubmit(e) {
     e.preventDefault();
     
     let itemTitle = document.getElementById("itemTitle").value;
