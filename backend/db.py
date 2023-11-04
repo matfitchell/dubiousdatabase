@@ -41,7 +41,9 @@ CREATE TABLE user (
   PRIMARY KEY (username),
   UNIQUE KEY username_UNIQUE (username),
   UNIQUE KEY email_UNIQUE (email)
-);
+)
+"""
+itemCreate = """
 CREATE TABLE item (
   itemId int NOT NULL AUTO_INCREMENT,
   username varchar(255) NOT NULL,
@@ -51,19 +53,26 @@ CREATE TABLE item (
   placeDate DATE NOT NULL,
   PRIMARY KEY (itemId),
   FOREIGN KEY (username) REFERENCES user(username)
-);
+)
+"""
+categoryCreate = """
 CREATE TABLE category (
   title varchar(255) NOT NULL,
   PRIMARY KEY(title)
-);
+)
+"""
+categoryToItemCreate = """
 CREATE TABLE categoryToItem(
   matchId int NOT NULL AUTO_INCREMENT,
   itemId int NOT NULL,
   categoryTitle varchar(255) NOT NULL,
   PRIMARY KEY (matchId),
-  FOREIGN KEY (categoryTitle) REFRENCES category(title),
-  FOREIGN KEY (itemId) REFRENCES item(itemId),
-);
+  FOREIGN KEY (categoryTitle) REFERENCES category(title),
+  FOREIGN KEY (itemId) REFERENCES item(itemId)
+)
+"""
+
+reviewCreate = """
 CREATE TABLE review (
   reviewId int NOT NULL AUTO_INCREMENT,
   itemId int NOT NULL,
@@ -73,11 +82,15 @@ CREATE TABLE review (
   date DATE NOT NULL,
   PRIMARY KEY (reviewId),
   FOREIGN KEY (itemId) REFERENCES item(itemId),
-  FOREIGN KEY (username) REFERENCES user(username),
-);
+  FOREIGN KEY (username) REFERENCES user(username)
+)
 """
 
 cursor.execute(sqlCreate)
+cursor.execute(itemCreate)
+cursor.execute(categoryCreate)
+cursor.execute(categoryToItemCreate)
+cursor.execute(reviewCreate)
 
 
 def hash_password(password: str):
