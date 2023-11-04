@@ -178,7 +178,7 @@ async function insertItem(e) {
         itemTitle: itemTitle,
         itemDesc: itemDesc,
         itemCategory: itemCategory,
-        itemPrice: parseInt(itemPrice),
+        itemPrice: parseInt(parseFloat(itemPrice) * 100),
     };
 
     try {
@@ -313,7 +313,7 @@ async function displaySearchResult(result) {
         itemElem.innerHTML = `<h6>Title: <span>${item.title}</span></h6>
         Description: <span>${item.desc}</span>
         <br>
-        Price: $<span>${item.price}</span>
+        Price: $<span>${parseFloat(item.price)/100}</span>
         <br>
         Categories: `;
 
