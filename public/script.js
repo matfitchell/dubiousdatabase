@@ -432,7 +432,8 @@ function resetUserPage() {
 
 //Sets screen to user view with logout button
 function setLoggedIn(username) {
-    resetErrorDiv() //clear any errors
+    resetErrorDiv();    //Clear any remaining errors
+    resetUserPage();    //Reset user page so only buttons show initially
 
     user = username;
     hide(getElementById("loginFormDiv"));
@@ -442,7 +443,8 @@ function setLoggedIn(username) {
 
 //Sets screen to guest view; shows main navigation buttons
 function setLoggedOut() {
-    resetErrorDiv() //clear any errors
+    resetErrorDiv();    //Clear remaining errors
+    resetUserPage();    //Reset user page
     
     user = "";
     hide(getElementById("welcomeDiv"));
