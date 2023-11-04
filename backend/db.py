@@ -22,8 +22,10 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 # Drop user table if it exists
-cursor.execute("DROP TABLE IF EXISTS `user`")
+cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
 cursor.execute("DROP TABLE IF EXISTS `item`")
+cursor.execute("DROP TABLE IF EXISTS `category`")
+cursor.execute("DROP TABLE IF EXISTS `user`")
 
 # Create user table
 # Create user table
@@ -50,21 +52,18 @@ CREATE TABLE item (
   PRIMARY KEY (itemId),
   FOREIGN KEY (username) REFERENCES user(username)
 );
-
 CREATE TABLE category (
   title varchar(255) NOT NULL,
   PRIMARY KEY(title)
-)
-
+);
 CREATE TABLE categoryToItem(
   matchId int NOT NULL AUTO_INCREMENT,
   itemId int NOT NULL,
   categoryTitle varchar(255) NOT NULL,
   PRIMARY KEY (matchId),
-  FOREIGN KEY (categoryTitle) REFRENCES category(title)
-  FOREIGN KEY (itemId) REFRENCES item(itemId)
-)
-
+  FOREIGN KEY (categoryTitle) REFRENCES category(title),
+  FOREIGN KEY (itemId) REFRENCES item(itemId),
+);
 CREATE TABLE review (
   reviewId int NOT NULL AUTO_INCREMENT,
   itemId int NOT NULL,
@@ -215,11 +214,11 @@ def insertItem():
 
       for e in itemCategory:  
         sql = "SELECT FROM category WHERE title = %s"
-        values = (e)
+        values = (e,)
         found = cursor.execute(sql,values)
         if found is None:
           sql = "INSERT INTO category(title) VALUES (%s)"
-          values = (e)
+          values = (e,)
           cursor.execute(sql,values)
         sql = "INSERT INTO categoryToItem(itemId, categoryTitle) VALUES (%d,%s)"
         values = (id,e)
@@ -249,11 +248,11 @@ def search(category):
     for id in ids:
 
       sql = "SELECT * FROM item WHERE itemId = %d "
-      values = (id)
+      values = (id,)
       cursor.execute(sql,values)
       result = cursor.fetchall()
       sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %d"
-      values = (id)
+      values = (id,)
       cursor.execute(sql,values)
       categoryTitles = cursor.fetchall()
       item = {
@@ -274,8 +273,4 @@ def search(category):
           "error":"AN EXCEPTION OCCURED." 
         }
     return jsonify(response)
-  
-
-
-
   
