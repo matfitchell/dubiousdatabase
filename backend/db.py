@@ -4,7 +4,7 @@ import os
 import hashlib
 import hmac
 from flask_cors import CORS
-from datetime import datetime
+from datetime import date
 
 
 os.environ['DB_PASS'] = 'password'
@@ -26,32 +26,60 @@ cursor.execute("DROP TABLE IF EXISTS `user`")
 cursor.execute("DROP TABLE IF EXISTS `item`")
 
 # Create user table
+# Create user table
+
 sqlCreate = """ 
-CREATE TABLE `user` (
-  `userName` varchar(255) NOT NULL,
-  `passWord` varbinary(255) NOT NULL,
-  `passSalt` varbinary(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `firstName` varchar(255) DEFAULT NULL,
-  `lastName` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`userName`),
-  UNIQUE KEY `userName_UNIQUE` (`userName`),
-  UNIQUE KEY `email_UNIQUE` (`email`)
+CREATE TABLE user (
+  username varchar(255) NOT NULL,
+  passWord varbinary(255) NOT NULL,
+  passSalt varbinary(255) NOT NULL,
+  email varchar(255) NOT NULL,
+  firstName varchar(255) DEFAULT NULL,
+  lastName varchar(255) DEFAULT NULL,
+  PRIMARY KEY (username),
+  UNIQUE KEY username_UNIQUE (username),
+  UNIQUE KEY email_UNIQUE (email)
+);
+CREATE TABLE item (
+  itemId int NOT NULL AUTO_INCREMENT,
+  username varchar(255) NOT NULL,
+  itemTitle varchar(255) NOT NULL,
+  itemDesc varchar(255) NOT NULL,
+  itemPrice int NOT NULL,
+  placeDate DATE NOT NULL,
+  PRIMARY KEY (itemId),
+  FOREIGN KEY (username) REFERENCES user(username)
+);
+
+CREATE TABLE category (
+  title varchar(255) NOT NULL,
+  PRIMARY KEY(title)
 )
+
+CREATE TABLE categoryToItem(
+  matchId int NOT NULL AUTO_INCREMENT,
+  itemId int NOT NULL,
+  categoryTitle varchar(255) NOT NULL,
+  PRIMARY KEY (matchId),
+  FOREIGN KEY (categoryTitle) REFRENCES category(title)
+  FOREIGN KEY (itemId) REFRENCES item(itemId)
+)
+
+CREATE TABLE review (
+  reviewId int NOT NULL AUTO_INCREMENT,
+  itemId int NOT NULL,
+  username varchar(255) NOT NULL,
+  rating int NOT NULL,
+  description varchar(255) NOT NULL,
+  date DATE NOT NULL,
+  PRIMARY KEY (reviewId),
+  FOREIGN KEY (itemId) REFERENCES item(itemId),
+  FOREIGN KEY (username) REFERENCES user(username),
+);
 """
 
-itemCreate = """ 
-CREATE TABLE `item` (
-  `userName` varchar(255) NOT NULL,
-  `itemTitle` varchar(255) NOT NULL,
-  `itemDesc` varbinary(255) NOT NULL,
-  `itemCategory` varbinary(255) NOT NULL,
-  `itemPrice` decimal(5, 2),
-  `placedDate` DATE NOT NULL
-)
-"""
 cursor.execute(sqlCreate)
-cursor.execute(itemCreate)
+
 
 def hash_password(password: str):
   # Generates bytestring of 16 random bytes
@@ -80,7 +108,7 @@ def register():
   hashed_password, salt = hash_password(password)
 
   try:
-    sql = "INSERT INTO user (userName, passWord, passSalt, email, firstName, lastName) VALUES (%s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO user (username, passWord, passSalt, email, firstName, lastName) VALUES (%s, %s, %s, %s, %s, %s)"
     values = (username, hashed_password, salt, email, first_name, last_name)
     cursor.execute(sql, values)
 
@@ -109,7 +137,7 @@ def login():
   # cursor = db.cursor()
 
   try:
-    sql = "SElECT passWord, passSalt FROM (user) WHERE userName= %s"
+    sql = "SElECT passWord, passSalt FROM (user) WHERE username= %s"
     values = (username,)
     cursor.execute(sql, values)
     
@@ -160,31 +188,46 @@ if __name__ == '__main__':
 @app.route('/api/insertItem', methods=['POST'])
 def insertItem():
   
-  userName = request.json['userName']
+  username = request.json['username']
   itemTitle = request.json['itemTitle']
   itemDesc  = request.json['itemDesc']
   itemCategory = request.json['itemCategory']
   itemPrice = request.json['itemPrice']
-  placeDate = datetime.today()
+  placeDate = date.today()
+
+
+  today_sql = f"{placeDate.year}-{placeDate.month}-{placeDate.day}"
   
 
-  itemQuery = "SELECT COUNT(*) FROM item WHERE userName = userName AND DATE(placedDate) = CURDATE(); VALUES (%d, %d)"
-  values = (userName, datetime.Today())
+  itemQuery = "SELECT COUNT(*) FROM item WHERE username = username AND DATE(placeDate) = CURDATE() VALUES (%d, %d)"
+  values = (username, today_sql)
   itemCount: int = cursor.execute(itemQuery, values)
   exceeded: bool = False
-  if itemCount > 3:
+  if itemCount >= 3:
     exceeded = True
 
   if exceeded == False:
     try:
 
-      sql = "INSERT INTO item (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %.2f, %d)"
-      values = (userName, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) 
-      cursor.execute(sql, values)
+      sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate) OUTPUT Inserted.itemId VALUES (%s, %s, %s, %d, %d)"
+      values = (username, itemTitle, itemDesc, itemPrice, today_sql) 
+      id = cursor.execute(sql, values)
 
+      for e in itemCategory:  
+        sql = "SELECT FROM category WHERE title = %s"
+        values = (e)
+        found = cursor.execute(sql,values)
+        if found is None:
+          sql = "INSERT INTO category(title) VALUES (%s)"
+          values = (e)
+          cursor.execute(sql,values)
+        sql = "INSERT INTO categoryToItem(itemId, categoryTitle) VALUES (%d,%s)"
+        values = (id,e)
+        cursor.execute(sql,values)
     except Exception as e:
       print(e)
-    
+      
+
       response = {
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
@@ -192,21 +235,47 @@ def insertItem():
     return jsonify(response)
 
 
-@app.route('/api/search', methods=['POST'])
-def search():
+@app.route('/api/search/?<category>', methods=['GET'])
+def search(category):
+
+  foramtted_list: list = []
+
   try:
-    data = request.get_json()
-    userInput = data.get('category')
+    category = request.args['category']
 
-    query = "SELECT * FROM your_table_name WHERE itemCategory = %s"
-    cursor.execute(query, (userInput,))
+    query = "SELECT itemId FROM categoryToItem WHERE categoryTitle = %s"
+    ids = cursor.execute(query, (category))
 
-    results = cursor.fetchall()
-    return jsonify(results)
-  
+    for id in ids:
+
+      sql = "SELECT * FROM item WHERE itemId = %d "
+      values = (id)
+      cursor.execute(sql,values)
+      result = cursor.fetchall()
+      sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %d"
+      values = (id)
+      cursor.execute(sql,values)
+      categoryTitles = cursor.fetchall()
+      item = {
+        "id": result["itemId"],
+        "title": result["itemTitle"],
+        "desc" : result['itemDesc'],
+        "price" : result['itemPrice'],
+        "categories" : categoryTitles 
+        } 
+      foramtted_list.append(item)
+
+    return jsonify(foramtted_list)
+
+
   except:
     response = {
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
         }
     return jsonify(response)
+  
+
+
+
+  
