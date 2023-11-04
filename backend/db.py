@@ -22,6 +22,7 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 # Drop user table if it exists
+cursor.execute("DROP TABLE IF EXISTS `review`")
 cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
 cursor.execute("DROP TABLE IF EXISTS `item`")
 cursor.execute("DROP TABLE IF EXISTS `category`")
@@ -192,11 +193,6 @@ def logout():
   }
   return jsonify(response)
 
-if __name__ == '__main__':
-    app.run(port=5000)
-
-
-
 @app.route('/api/insertItem', methods=['POST'])
 def insertItem():
   
@@ -287,3 +283,6 @@ def search(category):
         }
     return jsonify(response)
   
+
+if __name__ == '__main__':
+  app.run(port=5000)
