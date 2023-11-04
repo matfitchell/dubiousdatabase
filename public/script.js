@@ -178,7 +178,7 @@ async function insertItem(e) {
         itemTitle: itemTitle,
         itemDesc: itemDesc,
         itemCategory: itemCategory,
-        itemPrice: itemPrice,
+        itemPrice: parseInt(itemPrice),
     };
 
     try {
