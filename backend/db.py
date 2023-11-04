@@ -4,6 +4,10 @@ import os
 import hashlib
 import hmac
 from flask_cors import CORS
+from datetime import datetime
+
+
+os.environ['DB_PASS'] = 'password'
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +23,7 @@ cursor = db.cursor()
 
 # Drop user table if it exists
 cursor.execute("DROP TABLE IF EXISTS `user`")
+cursor.execute("DROP TABLE IF EXISTS `item`")
 
 # Create user table
 sqlCreate = """ 
@@ -34,7 +39,17 @@ CREATE TABLE `user` (
   UNIQUE KEY `email_UNIQUE` (`email`)
 )
 """
+
+itemCreate = """ 
+CREATE TABLE `item` (
+  `item` varchar(255) NOT NULL,
+  `description` varbinary(255) NOT NULL,
+  `catagory` varbinary(255) NOT NULL,
+  `price` decimal(5, 2)
+)
+"""
 cursor.execute(sqlCreate)
+cursor.execute(itemCreate)
 
 def hash_password(password: str):
   # Generates bytestring of 16 random bytes
@@ -128,7 +143,6 @@ def login():
       "error":"AN EXCEPTION OCCURED." 
     }
     return jsonify(response)
-
 @app.route('/api/logout')
 def logout():
   response = {
@@ -138,3 +152,27 @@ def logout():
 
 if __name__ == '__main__':
     app.run(port=5000)
+
+
+
+@app.route('/api/insertItem', methods=['POST'])
+def insertItem():
+  item = request.json['item']
+  description  = request.json['description']
+  catagory = request.json['catagory']
+  price = request.json['price']
+
+
+  try:
+    sql = "INSERT INTO item (item, description, catagory, price) VALUES (%s, %s, %s, %.2f)"
+    values = (item, description, catagory, price) 
+    cursor.execute(sql, values)
+
+  except Exception as e:
+    print(e)
+  
+    response = {
+        "status":"failed", 
+        "error":"AN EXCEPTION OCCURED." 
+      }
+    return jsonify(response)
