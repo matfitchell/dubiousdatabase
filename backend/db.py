@@ -4,10 +4,14 @@ import os
 import hashlib
 import hmac
 from flask_cors import CORS
+<<<<<<< HEAD
 from datetime import datetime
 
 
 os.environ['DB_PASS'] = 'password'
+=======
+from datetime import date
+>>>>>>> 56a9951 (Add review endpoint)
 
 app = Flask(__name__)
 CORS(app)
@@ -37,7 +41,31 @@ CREATE TABLE `user` (
   PRIMARY KEY (`userName`),
   UNIQUE KEY `userName_UNIQUE` (`userName`),
   UNIQUE KEY `email_UNIQUE` (`email`)
-)
+);
+
+CREATE TABLE `item` (
+  `itemId` int NOT NULL AUTO_INCREMENT,
+  `userName` varchar(255) NOT NULL,
+  `itemTitle` varchar(255) NOT NULL,
+  `itemDesc` varchar(255) NOT NULL,
+  `itemCategory` varchar(255) NOT NULL,
+  `itemPrice` int NOT NULL,
+  `placeDate` DATE NOT NULL,
+  PRIMARY KEY (`itemId`),
+  FOREIGN KEY (`userName`) REFERENCES user(`userName`)
+);
+
+CREATE TABLE `review` (
+  `reviewId` int NOT NULL AUTO_INCREMENT,
+  `itemId` int NOT NULL,
+  `userName` varchar(255) NOT NULL,
+  `rating` int NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `date` DATE NOT NULL,
+  PRIMARY KEY (`reviewId`),
+  FOREIGN KEY (`itemId`) REFERENCES item(`itemId`),
+  FOREIGN KEY (`userName`) REFERENCES user(`userName`),
+);
 """
 
 itemCreate = """ 
@@ -155,6 +183,7 @@ def logout():
 if __name__ == '__main__':
     app.run(port=5000)
 
+<<<<<<< HEAD
 
 
 @app.route('/api/insertItem', methods=['POST'])
@@ -209,4 +238,45 @@ def search():
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
         }
+=======
+@app.route('api/reviewItem', methods=["POST"])
+def review_item():
+  item_id = request.json['itemId']
+  username = request.json['username']
+  rating = request.json['rating']
+  desc = request.json['desc']
+
+  # cursor = db.cursor()
+
+  try:
+    today = date.today()
+    today_sql = f"{today.year}-{today.month}-{today.day}"
+
+    sql = "SElECT reviewId FROM (review) WHERE userName= %s and date= %s"
+    values = (username,today_sql)
+    cursor.execute(sql, values)
+
+    # Gets next row; there will only be 1 from sql query
+    result = cursor.fetchone()
+
+    if result != None and len(result) >= 3:
+      # User already submitted 3 reviews today
+      response = {
+        "message":"Too many reviews submitted today"
+      }
+      return jsonify(response), 401
+
+    # note that reviewId is autoincremented, so we aren't inserting with it
+    sql = "INSERT INTO review (itemId, userName, date, rating, description) VALUES (%s, %s, %s, %s, %s)"
+    values = (item_id, username, today_sql, rating, desc)
+    cursor.execute(sql, values)
+
+    db.commit()
+  except Exception as e:
+    print(e)
+    response = {
+      "status":"failed",
+      "error":"AN EXCEPTION OCCURED."
+    }
+>>>>>>> 56a9951 (Add review endpoint)
     return jsonify(response)
