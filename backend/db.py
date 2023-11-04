@@ -183,7 +183,6 @@ def logout():
 if __name__ == '__main__':
     app.run(port=5000)
 
-<<<<<<< HEAD
 
 
 @app.route('/api/insertItem', methods=['POST'])
@@ -238,7 +237,6 @@ def search():
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
         }
-=======
 @app.route('api/reviewItem', methods=["POST"])
 def review_item():
   item_id = request.json['itemId']
@@ -278,5 +276,4 @@ def review_item():
       "status":"failed",
       "error":"AN EXCEPTION OCCURED."
     }
->>>>>>> 56a9951 (Add review endpoint)
     return jsonify(response)
