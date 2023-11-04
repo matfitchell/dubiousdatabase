@@ -42,11 +42,12 @@ CREATE TABLE `user` (
 
 itemCreate = """ 
 CREATE TABLE `item` (
-  `item` varchar(255) NOT NULL,
-  `description` varbinary(255) NOT NULL,
-  `catagory` varbinary(255) NOT NULL,
-  `price` decimal(5, 2),
-  `placedDate` DATETIME NOT NULL
+  `userName` varchar(255) NOT NULL,
+  `itemTitle` varchar(255) NOT NULL,
+  `itemDesc` varbinary(255) NOT NULL,
+  `itemCategory` varbinary(255) NOT NULL,
+  `itemPrice` decimal(5, 2),
+  `placedDate` DATE NOT NULL
 )
 """
 cursor.execute(sqlCreate)
@@ -158,52 +159,54 @@ if __name__ == '__main__':
 
 @app.route('/api/insertItem', methods=['POST'])
 def insertItem():
-  username = request.json['username']
+  
+  userName = request.json['userName']
   itemTitle = request.json['itemTitle']
   itemDesc  = request.json['itemDesc']
   itemCategory = request.json['itemCategory']
   itemPrice = request.json['itemPrice']
   placeDate = datetime.today()
+  
 
-  try:
-    sql = "INSERT INTO item (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %.2f, %d)"
-    values = (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) 
-    cursor.execute(sql, values)
+  itemQuery = "SELECT COUNT(*) FROM item WHERE userName = userName AND DATE(placedDate) = CURDATE(); VALUES (%d, %d)"
+  values = (userName, datetime.Today())
+  itemCount: int = cursor.execute(itemQuery, values)
+  exceeded: bool = False
+  if itemCount > 3:
+    exceeded = True
 
-  except Exception as e:
-    print(e)
+  if exceeded == False:
+    try:
+
+      sql = "INSERT INTO item (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %.2f, %d)"
+      values = (userName, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) 
+      cursor.execute(sql, values)
+
+    except Exception as e:
+      print(e)
     
-
-  try:
-    sql = "SELECT FROM item(SELECT COUNT('username') VALUES (%d)"
-    print(sql)
-    num = cursor.execute(sql)
-
-  except Exception as e:
-    print(e)
-
-    # #TODO LIMIT TO 3 A DAY BY SEARCHING USERNAME AND POLLING RESULTS 
-    # try:
-
-      
-    #   sql = "INSERT INTO item (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %.2f, %d)"
-    #   values = (username, itemTitle, itemDesc, itemCategory, itemPrice, placeDate) 
-    #   cursor.execute(sql, values)
-
-    # except Exception as e:
-    #   print(e)
-    
-      # response = {
-      #     "status":"failed", 
-      #     "error":"AN EXCEPTION OCCURED." 
-      #   }
+      response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
     return jsonify(response)
 
 
 @app.route('/api/search', methods=['POST'])
 def search():
-  title = request.json['title']
-  desc  = request.json['desc']
-  price = request.json['price']
-  categories = request.json['categories']
+  try:
+    data = request.get_json()
+    userInput = data.get('category')
 
+    query = "SELECT * FROM your_table_name WHERE itemCategory = %s"
+    cursor.execute(query, (userInput,))
+
+    results = cursor.fetchall()
+    return jsonify(results)
+  
+  except:
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response)
