@@ -14,7 +14,7 @@ CORS(app)
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password=os.environ.get('DB_PASS'),
+  password=os.environ.get("DB_PASS"),
   database="dubiousdb"
 )
 
@@ -161,74 +161,142 @@ def initializeDb():
 
   cursor = db.cursor()
 
-  cursor.execute("DROP TABLE IF EXISTS `review`")
-  cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
-  cursor.execute("DROP TABLE IF EXISTS `item`")
-  cursor.execute("DROP TABLE IF EXISTS `category`")
-  
-  itemCreate = """
-    CREATE TABLE item (
-      itemId int NOT NULL AUTO_INCREMENT,
-      username varchar(255) NOT NULL,
-      itemTitle varchar(255) NOT NULL,
-      itemDesc varchar(255) NOT NULL,
-      itemPrice int NOT NULL,
-      placeDate DATE NOT NULL,
-      PRIMARY KEY (itemId),
-      FOREIGN KEY (username) REFERENCES user(username)
-    )
-  """
-  categoryCreate = """
-    CREATE TABLE category (
-      title varchar(255) NOT NULL,
-      PRIMARY KEY(title)
-    )
-  """
-  categoryToItemCreate = """
-    CREATE TABLE categoryToItem(
-      matchId int NOT NULL AUTO_INCREMENT,
-      itemId int NOT NULL,
-      categoryTitle varchar(255) NOT NULL,
-      PRIMARY KEY (matchId),
-      FOREIGN KEY (categoryTitle) REFERENCES category(title),
-      FOREIGN KEY (itemId) REFERENCES item(itemId)
-    )
-  """
+  try:
+    cursor.execute("DROP TABLE IF EXISTS `review`")
+    cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
+    cursor.execute("DROP TABLE IF EXISTS `item`")
+    cursor.execute("DROP TABLE IF EXISTS `category`")
+    
+    itemCreate = """
+      CREATE TABLE item (
+        itemId int NOT NULL AUTO_INCREMENT,
+        username varchar(255) NOT NULL,
+        itemTitle varchar(255) NOT NULL,
+        itemDesc varchar(255) NOT NULL,
+        itemPrice int NOT NULL,
+        placeDate DATE NOT NULL,
+        PRIMARY KEY (itemId),
+        FOREIGN KEY (username) REFERENCES user(username)
+      )
+    """
+    categoryCreate = """
+      CREATE TABLE category (
+        title varchar(255) NOT NULL,
+        PRIMARY KEY(title)
+      )
+    """
+    categoryToItemCreate = """
+      CREATE TABLE categoryToItem(
+        matchId int NOT NULL AUTO_INCREMENT,
+        itemId int NOT NULL,
+        categoryTitle varchar(255) NOT NULL,
+        PRIMARY KEY (matchId),
+        FOREIGN KEY (categoryTitle) REFERENCES category(title),
+        FOREIGN KEY (itemId) REFERENCES item(itemId)
+      )
+    """
 
-  reviewCreate = """
-    CREATE TABLE review (
-      reviewId int NOT NULL AUTO_INCREMENT,
-      itemId int NOT NULL,
-      username varchar(255) NOT NULL,
-      rating int NOT NULL,
-      description varchar(255) NOT NULL,
-      date DATE NOT NULL,
-      PRIMARY KEY (reviewId),
-      FOREIGN KEY (itemId) REFERENCES item(itemId),
-      FOREIGN KEY (username) REFERENCES user(username)
-    )
+    reviewCreate = """
+      CREATE TABLE review (
+        reviewId int NOT NULL AUTO_INCREMENT,
+        itemId int NOT NULL,
+        username varchar(255) NOT NULL,
+        rating int NOT NULL,
+        description varchar(255) NOT NULL,
+        date DATE NOT NULL,
+        PRIMARY KEY (reviewId),
+        FOREIGN KEY (itemId) REFERENCES item(itemId),
+        FOREIGN KEY (username) REFERENCES user(username)
+      )
+    """
+
+    cursor.execute(itemCreate)
+    cursor.execute(categoryCreate)
+    cursor.execute(categoryToItemCreate)
+    cursor.execute(reviewCreate)
+
+    testUserData = """INSERT INTO user (username, passWord, passSalt, email, firstName, lastName)
+    VALUES
+    ('John', 0x70617373776F726431, 0x73616C7431, 'john@example.com', 'John', 'Doe'),
+    ('Alice', 0x70617373776F726432, 0x73616C7432, 'alice@example.com', 'Alice', 'Smith'),
+    ('Bob', 0x70617373776F726433, 0x73616C7433, 'bob@example.com', 'Bob', 'Johnson'),
+    ('Emma', 0x70617373776F726434, 0x73616C7434, 'emma@example.com', 'Emma', 'Wilson'),
+    ('Michael', 0x70617373776F726435, 0x73616C7435, 'michael@example.com', 'Michael', 'Brown');
+    """
+
+    testItemsData = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate)
+    VALUES
+    (1, 'John', 'Samsung Galaxy S22 Ultra', 'Powerful Galaxy S22 Ultra.', 130000, DATE('2023-11-04')),
+    (2, 'Alice', 'MacBook Pro 2023', 'The latest MacBook Pro with advanced features.', 200000, DATE('2023-12-01')),
+    (3, 'Bob', 'Sony PlayStation 5 Pro', 'Experience gaming like never before with PS5 Pro.', 45000, DATE('2023-03-16')),
+    (4, 'Emma', 'Canon EOS R5', 'A professional-grade mirrorless camera for photographers.', 300000, DATE('2023-11-04')),
+    (5, 'Michael', 'Dell XPS 15 Laptop', 'Powerful performance in a sleek design.', 140000, DATE('2023-08-29'));
+    """ 
+    testCategoryData = """INSERT INTO category(title) VALUES
+      ('Samsung'),
+      ('Cellphone'),
+      ('Android'),
+      ('Laptop'),
+      ('Apple'),
+      ('MacBook'),
+      ('Gaming'),
+      ('Console'),
+      ('Sony'),
+      ('Camera'),
+      ('Photography'),
+      ('Canon'),
+      ('Dell'),
+      ('Windows');
   """
+    testCategoryToItemData = """
+    INSERT INTO categoryToItem (categoryTitle, itemID)
+    VALUES
+        ('Samsung', 1),
+        ('Cellphone', 1),
+        ('Android', 1),
+        ('Laptop', 2),
+        ('Apple', 2),
+        ('MacBook', 2),
+        ('Gaming', 3),
+        ('Console', 3),
+        ('Sony', 3),
+        ('Camera', 4),
+        ('Photography', 4),
+        ('Canon', 4),
+        ('Laptop', 5),
+        ('Dell', 5),
+        ('Windows', 5);
+    """ 
+    testReviewData = """
+    INSERT INTO review(itemId, username, rating, description, date)
+    VALUES
+    (1, 'John', 2, 'it was alright', DATE('2023-10-02')),
+    (2, 'Alice', 3, 'terrible product', DATE('2022-09-23')),
+    (3, 'Bob', 0, 'truly amazing', DATE('2021-05-21')),
+    (4, 'Emma', 0, 'greatest product I have ever received', DATE('2020-01-14')),
+    (5, 'Michael', 1, 'cured cancer, but could have been better', DATE('2019-02-10'));
+    """
 
-  testUserData = """INSERT INTO user (username, passWord, passSalt, email, firstName, lastName)
-  VALUES
-  ('John', 0x70617373776F726431, 0x73616C7431, 'john@example.com', 'John', 'Doe'),
-  ('Alice', 0x70617373776F726432, 0x73616C7432, 'alice@example.com', 'Alice', 'Smith'),
-  ('Bob', 0x70617373776F726433, 0x73616C7433, 'bob@example.com', 'Bob', 'Johnson'),
-  ('Emma', 0x70617373776F726434, 0x73616C7434, 'emma@example.com', 'Emma', 'Wilson'),
-  ('Michael', 0x70617373776F726435, 0x73616C7435, 'michael@example.com', 'Michael', 'Brown');
-  """
+    cursor.execute(testUserData)
+    cursor.execute(testItemsData)
+    cursor.execute(testCategoryData)
+    cursor.execute(testCategoryToItemData)
+    cursor.execute(testReviewData)
 
-  cursor.execute(testUserData)
-  cursor.execute(itemCreate)
-  cursor.execute(categoryCreate)
-  cursor.execute(categoryToItemCreate)
-  cursor.execute(reviewCreate)
+    db.commit()
 
-  response =    {
-    "message":"Database initialized"
+    response =    {
+      "message":"Database initialized"
+    }
+
+    return jsonify(response)
+  except Exception as e:
+    print(e)
+  errorResponse = {
+    "status":"failed", 
+    "error":"AN EXCEPTION OCCURED." 
   }
-
-  return jsonify(response)
+  return jsonify(errorResponse)
 
 
 @app.route('/api/insertItem', methods=['POST'])
@@ -252,8 +320,9 @@ def insertItem():
     cursor.execute(itemQuery, values)
     itemCount = cursor.fetchone()[0]
     print(f"itemCount: {itemCount}")
+
     if itemCount is not None and itemCount >= 3:
-      return jsonify({ "message":"Too many items inserted today."})
+      return jsonify({ "message":"Too many items inserted today."}), 401
 
     sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %s)"
     values = (username, itemTitle, itemDesc, itemPrice, today_sql) 
@@ -381,6 +450,8 @@ def review_item():
     db.commit()
   except Exception as e:
     print(e)
+    print(traceback.format_exc())
+    
     response = {
       "status":"failed",
       "error":"AN EXCEPTION OCCURED."
