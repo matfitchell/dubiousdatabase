@@ -3,11 +3,10 @@ import mysql.connector
 import os
 import hashlib
 import hmac
+import traceback
 from flask_cors import CORS
 from datetime import date
 
-
-os.environ['DB_PASS'] = 'password'
 
 app = Flask(__name__)
 CORS(app)
@@ -19,18 +18,16 @@ db = mysql.connector.connect(
   database="dubiousdb"
 )
 
-cursor = db.cursor()
+globalCursor = db.cursor()
 
 # Drop user table if it exists
-cursor.execute("DROP TABLE IF EXISTS `review`")
-cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
-cursor.execute("DROP TABLE IF EXISTS `item`")
-cursor.execute("DROP TABLE IF EXISTS `category`")
-cursor.execute("DROP TABLE IF EXISTS `user`")
+globalCursor.execute("DROP TABLE IF EXISTS `review`")
+globalCursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
+globalCursor.execute("DROP TABLE IF EXISTS `item`")
+globalCursor.execute("DROP TABLE IF EXISTS `category`")
+globalCursor.execute("DROP TABLE IF EXISTS `user`")
 
 # Create user table
-# Create user table
-
 sqlCreate = """ 
 CREATE TABLE user (
   username varchar(255) NOT NULL,
@@ -44,55 +41,15 @@ CREATE TABLE user (
   UNIQUE KEY email_UNIQUE (email)
 )
 """
-itemCreate = """
-CREATE TABLE item (
-  itemId int NOT NULL AUTO_INCREMENT,
-  username varchar(255) NOT NULL,
-  itemTitle varchar(255) NOT NULL,
-  itemDesc varchar(255) NOT NULL,
-  itemPrice int NOT NULL,
-  placeDate DATE NOT NULL,
-  PRIMARY KEY (itemId),
-  FOREIGN KEY (username) REFERENCES user(username)
-)
-"""
-categoryCreate = """
-CREATE TABLE category (
-  title varchar(255) NOT NULL,
-  PRIMARY KEY(title)
-)
-"""
-categoryToItemCreate = """
-CREATE TABLE categoryToItem(
-  matchId int NOT NULL AUTO_INCREMENT,
-  itemId int NOT NULL,
-  categoryTitle varchar(255) NOT NULL,
-  PRIMARY KEY (matchId),
-  FOREIGN KEY (categoryTitle) REFERENCES category(title),
-  FOREIGN KEY (itemId) REFERENCES item(itemId)
-)
-"""
+globalCursor.execute(sqlCreate)
+globalCursor.close()
 
-reviewCreate = """
-CREATE TABLE review (
-  reviewId int NOT NULL AUTO_INCREMENT,
-  itemId int NOT NULL,
-  username varchar(255) NOT NULL,
-  rating int NOT NULL,
-  description varchar(255) NOT NULL,
-  date DATE NOT NULL,
-  PRIMARY KEY (reviewId),
-  FOREIGN KEY (itemId) REFERENCES item(itemId),
-  FOREIGN KEY (username) REFERENCES user(username)
-)
-"""
-
-cursor.execute(sqlCreate)
-cursor.execute(itemCreate)
-cursor.execute(categoryCreate)
-cursor.execute(categoryToItemCreate)
-cursor.execute(reviewCreate)
-
+ratings = {
+  "excellent": 0,
+  "good": 1,
+  "fair": 2,
+  "poor": 3
+}
 
 def hash_password(password: str):
   # Generates bytestring of 16 random bytes
@@ -109,6 +66,7 @@ def check_password(hashed: bytes, password: str, salt: bytes) -> bool:
   else:
     return False
 
+
 @app.route('/api/register', methods=['POST'])
 def register():
   username = request.json['username']
@@ -117,7 +75,8 @@ def register():
   first_name = request.json['first_name']
   last_name = request.json['last_name']
 
-  # cursor = db.cursor()
+  cursor = db.cursor()
+
   hashed_password, salt = hash_password(password)
 
   try:
@@ -142,12 +101,13 @@ def register():
   }
   return jsonify(response)
 
+
 @app.route('/api/login', methods=["POST"])
 def login():
   username = request.json['username']
   password = request.json['password']
 
-  # cursor = db.cursor()
+  cursor = db.cursor()
 
   try:
     sql = "SElECT passWord, passSalt FROM (user) WHERE username= %s"
@@ -186,12 +146,90 @@ def login():
       "error":"AN EXCEPTION OCCURED." 
     }
     return jsonify(response)
+
+
 @app.route('/api/logout')
 def logout():
   response = {
     "message":"Successfully logged out." 
   }
   return jsonify(response)
+
+
+@app.route('/api/initializeDb', methods=["GET"])
+def initializeDb():
+
+  cursor = db.cursor()
+
+  cursor.execute("DROP TABLE IF EXISTS `review`")
+  cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
+  cursor.execute("DROP TABLE IF EXISTS `item`")
+  cursor.execute("DROP TABLE IF EXISTS `category`")
+  
+  itemCreate = """
+    CREATE TABLE item (
+      itemId int NOT NULL AUTO_INCREMENT,
+      username varchar(255) NOT NULL,
+      itemTitle varchar(255) NOT NULL,
+      itemDesc varchar(255) NOT NULL,
+      itemPrice int NOT NULL,
+      placeDate DATE NOT NULL,
+      PRIMARY KEY (itemId),
+      FOREIGN KEY (username) REFERENCES user(username)
+    )
+  """
+  categoryCreate = """
+    CREATE TABLE category (
+      title varchar(255) NOT NULL,
+      PRIMARY KEY(title)
+    )
+  """
+  categoryToItemCreate = """
+    CREATE TABLE categoryToItem(
+      matchId int NOT NULL AUTO_INCREMENT,
+      itemId int NOT NULL,
+      categoryTitle varchar(255) NOT NULL,
+      PRIMARY KEY (matchId),
+      FOREIGN KEY (categoryTitle) REFERENCES category(title),
+      FOREIGN KEY (itemId) REFERENCES item(itemId)
+    )
+  """
+
+  reviewCreate = """
+    CREATE TABLE review (
+      reviewId int NOT NULL AUTO_INCREMENT,
+      itemId int NOT NULL,
+      username varchar(255) NOT NULL,
+      rating int NOT NULL,
+      description varchar(255) NOT NULL,
+      date DATE NOT NULL,
+      PRIMARY KEY (reviewId),
+      FOREIGN KEY (itemId) REFERENCES item(itemId),
+      FOREIGN KEY (username) REFERENCES user(username)
+    )
+  """
+
+  testUserData = """INSERT INTO user (username, passWord, passSalt, email, firstName, lastName)
+  VALUES
+  ('John', 0x70617373776F726431, 0x73616C7431, 'john@example.com', 'John', 'Doe'),
+  ('Alice', 0x70617373776F726432, 0x73616C7432, 'alice@example.com', 'Alice', 'Smith'),
+  ('Bob', 0x70617373776F726433, 0x73616C7433, 'bob@example.com', 'Bob', 'Johnson'),
+  ('Emma', 0x70617373776F726434, 0x73616C7434, 'emma@example.com', 'Emma', 'Wilson'),
+  ('Michael', 0x70617373776F726435, 0x73616C7435, 'michael@example.com', 'Michael', 'Brown');
+  """
+
+  cursor.execute(testUserData)
+  cursor.execute(itemCreate)
+  cursor.execute(categoryCreate)
+  cursor.execute(categoryToItemCreate)
+  cursor.execute(reviewCreate)
+
+  response =    {
+    "message":"Database initialized"
+  }
+
+  return jsonify(response)
+
 
 @app.route('/api/insertItem', methods=['POST'])
 def insertItem():
@@ -206,82 +244,150 @@ def insertItem():
 
   today_sql = f"{placeDate.year}-{placeDate.month}-{placeDate.day}"
   
+  cursor = db.cursor()
 
-  itemQuery = "SELECT COUNT(*) FROM item WHERE username = username AND DATE(placeDate) = CURDATE() VALUES (%d, %d)"
-  values = (username, today_sql)
-  itemCount: int = cursor.execute(itemQuery, values)
-  exceeded: bool = False
-  if itemCount >= 3:
-    exceeded = True
+  try:
+    itemQuery = "SELECT COUNT(*) FROM item WHERE username = %s AND placeDate = CURDATE()"
+    values = (username,)
+    cursor.execute(itemQuery, values)
+    itemCount = cursor.fetchone()[0]
+    print(f"itemCount: {itemCount}")
+    if itemCount is not None and itemCount >= 3:
+      return jsonify({ "message":"Too many items inserted today."})
 
-  if exceeded == False:
-    try:
+    sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %s)"
+    values = (username, itemTitle, itemDesc, itemPrice, today_sql) 
+    cursor.execute(sql, values)
 
-      sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate) OUTPUT Inserted.itemId VALUES (%s, %s, %s, %d, %d)"
-      values = (username, itemTitle, itemDesc, itemPrice, today_sql) 
-      id = cursor.execute(sql, values)
+    db.commit()
 
-      for e in itemCategory:  
-        sql = "SELECT FROM category WHERE title = %s"
+    id = cursor.lastrowid
+    print(f"Item ID: {id}")
+
+    for e in itemCategory:  
+      sql = "SELECT * FROM category WHERE title = %s"
+      values = (e,)
+      cursor.execute(sql,values)
+      found = cursor.fetchone()
+      if found is None:
+        sql = "INSERT INTO category(title) VALUES (%s)"
         values = (e,)
-        found = cursor.execute(sql,values)
-        if found is None:
-          sql = "INSERT INTO category(title) VALUES (%s)"
-          values = (e,)
-          cursor.execute(sql,values)
-        sql = "INSERT INTO categoryToItem(itemId, categoryTitle) VALUES (%d,%s)"
-        values = (id,e)
         cursor.execute(sql,values)
-    except Exception as e:
-      print(e)
-      
+      sql = "INSERT INTO categoryToItem(itemId, categoryTitle) VALUES (%s,%s)"
+      values = (id,e)
+      cursor.execute(sql,values)
 
-      response = {
-          "status":"failed", 
-          "error":"AN EXCEPTION OCCURED." 
-        }
-    return jsonify(response)
+      db.commit()
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+    
+    errorResponse = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(errorResponse)
+  response = {
+    "message":"successful insert"
+  }
+  return jsonify(response)
 
 
-@app.route('/api/search/?<category>', methods=['GET'])
-def search(category):
+@app.route('/api/search', methods=['GET'])
+def search():
 
   foramtted_list: list = []
 
+  cursor = db.cursor()
+  
   try:
-    category = request.args['category']
-
+    term = request.args["term"]
     query = "SELECT itemId FROM categoryToItem WHERE categoryTitle = %s"
-    ids = cursor.execute(query, (category))
+    cursor.execute(query, (term,))
+    ids = cursor.fetchall()
+
+    print(f"ids: {ids}")
 
     for id in ids:
 
-      sql = "SELECT * FROM item WHERE itemId = %d "
-      values = (id,)
+      sql = "SELECT itemTitle, itemDesc, itemPrice FROM item WHERE itemId = %s"
+      values = (id[0],)
       cursor.execute(sql,values)
-      result = cursor.fetchall()
-      sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %d"
-      values = (id,)
+      result = cursor.fetchall()[0]
+      print(f"result: {result}")
+
+      sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      values = (id[0],)
       cursor.execute(sql,values)
       categoryTitles = cursor.fetchall()
+      categories = [x[0] for x in categoryTitles]
+      print(f"categories: {categories}")
+
       item = {
-        "id": result["itemId"],
-        "title": result["itemTitle"],
-        "desc" : result['itemDesc'],
-        "price" : result['itemPrice'],
-        "categories" : categoryTitles 
+        "id": id[0],
+        "title": result[0],
+        "desc" : result[1],
+        "price" : result[2],
+        "categories" : categories 
         } 
+      
+      print(f"item to send: {item}")
       foramtted_list.append(item)
 
     return jsonify(foramtted_list)
 
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
 
-  except:
     response = {
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
         }
     return jsonify(response)
+  
+@app.route('/api/reviewItem', methods=["POST"])
+def review_item():
+  item_id = request.json['itemId']
+  username = request.json['username']
+  rating = request.json['rating']
+  desc = request.json['desc']
+
+  cursor = db.cursor()
+
+  try:
+    today = date.today()
+    today_sql = f"{today.year}-{today.month}-{today.day}"
+
+    sql = "SElECT reviewId FROM (review) WHERE userName= %s and date= %s"
+    values = (username,today_sql)
+    cursor.execute(sql, values)
+
+    # Gets next row; there will only be 1 from sql query
+    result = cursor.fetchone()
+
+    if result != None and len(result) >= 3:
+      # User already submitted 3 reviews today
+      response = {
+        "message":"Too many reviews submitted today"
+      }
+      return jsonify(response), 401
+
+    # note that reviewId is autoincremented, so we aren't inserting with it
+    sql = "INSERT INTO review (itemId, userName, date, rating, description) VALUES (%s, %s, %s, %s, %s)"
+    values = (item_id, username, today_sql, ratings[rating], desc)
+    cursor.execute(sql, values)
+
+    db.commit()
+  except Exception as e:
+    print(e)
+    response = {
+      "status":"failed",
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response)
+  
+  return jsonify({ "message":"Review inserted."})
   
 
 if __name__ == '__main__':
