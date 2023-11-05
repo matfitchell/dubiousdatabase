@@ -28,6 +28,8 @@ Alisha A
 Jonathan N
 - Set up the back-end web app
 - Created the routes (login, logout, and register) and password hashing.
+- Helped with creating other backend routes and miscelaneous functionality
+- Implemented the review backend route
 
 Mitchell M
 -Implemented backend for item insertion 
