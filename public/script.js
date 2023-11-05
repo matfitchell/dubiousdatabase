@@ -171,6 +171,7 @@ async function initializeDb(e) {
 async function insertItemFormSubmit(e) {
     e.preventDefault();
     
+    let username = user;
     let itemTitle = document.getElementById("itemTitle").value;
     let itemDesc = document.getElementById("itemDesc").value;
     let itemCategory = document.getElementById("itemCategory").value;
@@ -187,6 +188,7 @@ async function insertItemFormSubmit(e) {
     let price = parseInt(parseFloat(itemPrice) * 100);
 
     let itemObj = {
+        username: user,
         itemTitle: itemTitle,
         itemDesc: itemDesc,
         itemCategory: categories,
