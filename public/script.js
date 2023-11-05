@@ -176,11 +176,21 @@ async function insertItemFormSubmit(e) {
     let itemCategory = document.getElementById("itemCategory").value;
     let itemPrice = document.getElementById("itemPrice").value;
 
+    //get categories in an array
+    let categories = [];
+    itemCategory.split(",").forEach(c => {
+        c = c.trim();   //trim any spaces
+        categories.push(c); //add category to array
+    })
+
+    //get price as an int
+    let price = parseInt(parseFloat(itemPrice) * 100);
+
     let itemObj = {
         itemTitle: itemTitle,
         itemDesc: itemDesc,
-        itemCategory: itemCategory,
-        itemPrice: parseInt(parseFloat(itemPrice) * 100),
+        itemCategory: categories,
+        itemPrice: price,
     };
 
     try {
@@ -311,11 +321,13 @@ async function displaySearchResult(result) {
         itemElem.id = `${item.id}`;
         itemElem.className = "list-group-item list-group-item-action";
 
+        let price = parseFloat(item.price) / 100;   //Format price correctly
+
         //Set innerHTML details
         itemElem.innerHTML = `<h6>Title: <span>${item.title}</span></h6>
         Description: <span>${item.desc}</span>
         <br>
-        Price: $<span>${parseFloat(item.price)/100}</span>
+        Price: $<span>${price}</span>
         <br>
         Categories: `;
 
