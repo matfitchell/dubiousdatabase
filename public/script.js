@@ -188,7 +188,7 @@ async function insertItemFormSubmit(e) {
     let price = parseInt(parseFloat(itemPrice) * 100);
 
     let itemObj = {
-        username: user,
+        username: username,
         itemTitle: itemTitle,
         itemDesc: itemDesc,
         itemCategory: categories,
@@ -238,7 +238,7 @@ async function searchItems(e) {
 
         let jsonData = await response.json();
         if (response.ok) {
-            displaySearchResult(jsonData.items);
+            displaySearchResult(jsonData);
         }
         else {
             setErrorDiv(jsonData.message);
@@ -247,68 +247,6 @@ async function searchItems(e) {
     } catch (err) {
         console.log(err)
     }
-
-    // const testData = [
-    //     {
-    //         id: 1,
-    //         title: "Item 1",
-    //         desc: "Description for Item 1",
-    //         price: 19.99,
-    //         categories: ["Category A", "Category B"]
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Item 2",
-    //         desc: "Description for Item 2",
-    //         price: 29.99,
-    //         categories: ["Category B", "Category C"]
-    //     },
-    //     {
-    //         id: 3,
-    //         title: "Item 3",
-    //         desc: "Description for Item 3",
-    //         price: 39.99,
-    //         categories: ["Category A", "Category C"]
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Item 2",
-    //         desc: "Description for Item 2",
-    //         price: 29.99,
-    //         categories: ["Category B", "Category C"]
-    //     },
-    //     {
-    //         id: 3,
-    //         title: "Item 3",
-    //         desc: "Description for Item 3",
-    //         price: 39.99,
-    //         categories: ["Category A", "Category C"]
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Item 2",
-    //         desc: "Description for Item 2",
-    //         price: 29.99,
-    //         categories: ["Category B", "Category C"]
-    //     },
-    //     {
-    //         id: 3,
-    //         title: "Item 3",
-    //         desc: "Description for Item 3",
-    //         price: 39.99,
-    //         categories: ["Category A", "Category C"]
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Item 2",
-    //         desc: "Description for Item 2",
-    //         price: 29.99,
-    //         categories: ["Category B", "Category C"]
-    //     },
-    //     // Add more test objects as needed
-    // ];
-
-    // displaySearchResult(testData);
 }
 
 //Takes list of json objects
