@@ -92,7 +92,7 @@ def register():
       "status": "failed",
       "message": "User already exists with username or email."
     }
-    return jsonify(response), 401
+    return jsonify(response), 400
 
   print(f"{cursor.rowcount} record{'' if cursor.rowcount == 1 else 's'} inserted.")
 
@@ -122,7 +122,7 @@ def login():
       response = {
         "message":"Invalid credentials. Please try again"
       }
-      return jsonify(response), 401
+      return jsonify(response), 400
     
     # Result in order of SELECT statement
     db_password, db_salt = result
@@ -137,7 +137,7 @@ def login():
       response = {
         "message":"Invalid credentials. Please try again."
       }
-      return jsonify(response), 401
+      return jsonify(response), 400
     
   except Exception as e:
     print(e)
@@ -145,7 +145,7 @@ def login():
       "status":"failed", 
       "error":"AN EXCEPTION OCCURED." 
     }
-    return jsonify(response)
+    return jsonify(response), 500
 
 
 @app.route('/api/logout')
@@ -247,7 +247,7 @@ def initializeDb():
       ('Canon'),
       ('Dell'),
       ('Windows');
-  """
+    """
     testCategoryToItemData = """
     INSERT INTO categoryToItem (categoryTitle, itemID)
     VALUES
@@ -296,7 +296,7 @@ def initializeDb():
     "status":"failed", 
     "error":"AN EXCEPTION OCCURED." 
   }
-  return jsonify(errorResponse)
+  return jsonify(errorResponse), 500
 
 
 @app.route('/api/insertItem', methods=['POST'])
@@ -322,7 +322,7 @@ def insertItem():
     print(f"itemCount: {itemCount}")
 
     if itemCount is not None and itemCount >= 3:
-      return jsonify({ "message":"Too many items inserted today."}), 401
+      return jsonify({ "message":"Too many items inserted today."}), 400
 
     sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %s)"
     values = (username, itemTitle, itemDesc, itemPrice, today_sql) 
@@ -355,7 +355,7 @@ def insertItem():
       "status":"failed", 
       "error":"AN EXCEPTION OCCURED." 
     }
-    return jsonify(errorResponse)
+    return jsonify(errorResponse), 500
   response = {
     "message":"successful insert"
   }
@@ -413,7 +413,7 @@ def search():
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
         }
-    return jsonify(response)
+    return jsonify(response), 500
   
 @app.route('/api/reviewItem', methods=["POST"])
 def review_item():
@@ -440,7 +440,7 @@ def review_item():
       response = {
         "message":"Too many reviews submitted today"
       }
-      return jsonify(response), 401
+      return jsonify(response), 400
 
     # note that reviewId is autoincremented, so we aren't inserting with it
     sql = "INSERT INTO review(itemId, userName, date, rating, description) VALUES (%s, %s, %s, %s, %s)"
@@ -456,7 +456,7 @@ def review_item():
       "status":"failed",
       "error":"AN EXCEPTION OCCURED."
     }
-    return jsonify(response)
+    return jsonify(response), 500
   
   return jsonify({ "message":"Review inserted."})
   
