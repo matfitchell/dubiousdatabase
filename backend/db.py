@@ -428,12 +428,12 @@ def review_item():
     today = date.today()
     today_sql = f"{today.year}-{today.month}-{today.day}"
 
-    sql = "SElECT reviewId FROM (review) WHERE userName= %s and date= %s"
+    sql = "SElECT reviewId FROM review WHERE userName= %s and date= %s"
     values = (username,today_sql)
     cursor.execute(sql, values)
 
     # Gets next row; there will only be 1 from sql query
-    result = cursor.fetchone()
+    result = cursor.fetchall()
 
     if result != None and len(result) >= 3:
       # User already submitted 3 reviews today
@@ -443,7 +443,7 @@ def review_item():
       return jsonify(response), 401
 
     # note that reviewId is autoincremented, so we aren't inserting with it
-    sql = "INSERT INTO review (itemId, userName, date, rating, description) VALUES (%s, %s, %s, %s, %s)"
+    sql = "INSERT INTO review(itemId, userName, date, rating, description) VALUES (%s, %s, %s, %s, %s)"
     values = (item_id, username, today_sql, ratings[rating], desc)
     cursor.execute(sql, values)
 
