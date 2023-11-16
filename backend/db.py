@@ -41,9 +41,20 @@ CREATE TABLE user (
   UNIQUE KEY email_UNIQUE (email)
 )
 """
+testUserData = """INSERT INTO user (username, passWord, passSalt, email, firstName, lastName)
+VALUES
+('John', 0x70617373776F726431, 0x73616C7431, 'john@example.com', 'John', 'Doe'),
+('Alice', 0x70617373776F726432, 0x73616C7432, 'alice@example.com', 'Alice', 'Smith'),
+('Bob', 0x70617373776F726433, 0x73616C7433, 'bob@example.com', 'Bob', 'Johnson'),
+('Emma', 0x70617373776F726434, 0x73616C7434, 'emma@example.com', 'Emma', 'Wilson'),
+('Michael', 0x70617373776F726435, 0x73616C7435, 'michael@example.com', 'Michael', 'Brown');
+"""
+
 globalCursor.execute(sqlCreate)
+globalCursor.execute(testUserData)
 globalCursor.close()
 
+# Enums for ratings
 ratings = {
   "excellent": 0,
   "good": 1,
@@ -215,15 +226,6 @@ def initializeDb():
     cursor.execute(categoryToItemCreate)
     cursor.execute(reviewCreate)
 
-    testUserData = """INSERT INTO user (username, passWord, passSalt, email, firstName, lastName)
-    VALUES
-    ('John', 0x70617373776F726431, 0x73616C7431, 'john@example.com', 'John', 'Doe'),
-    ('Alice', 0x70617373776F726432, 0x73616C7432, 'alice@example.com', 'Alice', 'Smith'),
-    ('Bob', 0x70617373776F726433, 0x73616C7433, 'bob@example.com', 'Bob', 'Johnson'),
-    ('Emma', 0x70617373776F726434, 0x73616C7434, 'emma@example.com', 'Emma', 'Wilson'),
-    ('Michael', 0x70617373776F726435, 0x73616C7435, 'michael@example.com', 'Michael', 'Brown');
-    """
-
     testItemsData = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate)
     VALUES
     (1, 'John', 'Samsung Galaxy S22 Ultra', 'Powerful Galaxy S22 Ultra.', 130000, DATE('2023-11-04')),
@@ -277,7 +279,6 @@ def initializeDb():
     (5, 'Michael', 1, 'cured cancer, but could have been better', DATE('2019-02-10'));
     """
 
-    cursor.execute(testUserData)
     cursor.execute(testItemsData)
     cursor.execute(testCategoryData)
     cursor.execute(testCategoryToItemData)
