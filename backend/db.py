@@ -23,7 +23,10 @@ globalCursor = db.cursor()
 # Drop user table if it exists
 globalCursor.execute("DROP TABLE IF EXISTS `review`")
 globalCursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
+globalCursor.execute("DROP TABLE IF EXISTS `purchase`")
+globalCursor.execute("DROP TABLE IF EXISTS `favoriteItem`")
 globalCursor.execute("DROP TABLE IF EXISTS `item`")
+globalCursor.execute("DROP TABLE IF EXISTS `favoriteSeller`")
 globalCursor.execute("DROP TABLE IF EXISTS `category`")
 globalCursor.execute("DROP TABLE IF EXISTS `user`")
 
@@ -175,7 +178,10 @@ def initializeDb():
   try:
     cursor.execute("DROP TABLE IF EXISTS `review`")
     cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
+    cursor.execute("DROP TABLE IF EXISTS `purchase`")
+    cursor.execute("DROP TABLE IF EXISTS `favoriteItem`")
     cursor.execute("DROP TABLE IF EXISTS `item`")
+    cursor.execute("DROP TABLE IF EXISTS `favoriteSeller`")
     cursor.execute("DROP TABLE IF EXISTS `category`")
     
     itemCreate = """
@@ -186,6 +192,7 @@ def initializeDb():
         itemDesc varchar(255) NOT NULL,
         itemPrice int NOT NULL,
         placeDate DATE NOT NULL,
+        bought BOOLEAN NOT NULL,
         PRIMARY KEY (itemId),
         FOREIGN KEY (username) REFERENCES user(username)
       )
@@ -221,68 +228,135 @@ def initializeDb():
       )
     """
 
+    purchaseCreate = """
+    CREATE TABLE purchase (
+      id int NOT NULL AUTO_INCREMENT,
+      username varchar(255) NOT NULL,
+      itemId int NOT NULL,
+      PRIMARY KEY (id),
+      FOREIGN KEY (username) REFERENCES user(username),
+      FOREIGN KEY (itemId) REFERENCES item(itemId)
+    )
+    """
+
+    favoriteSellerCreate = """
+    CREATE TABLE favoriteSeller (
+      id int NOT NULL AUTO_INCREMENT,
+      username varchar(255) NOT NULL,
+      favoriteUsername varchar(255) NOT NULL,
+      PRIMARY KEY (id),
+      FOREIGN KEY (username) REFERENCES user(username),
+      FOREIGN KEY (favoriteUsername) REFERENCES user(username)
+    )
+    """
+    
+    favoriteItemCreate = """
+    CREATE TABLE favoriteItem (
+      id int NOT NULL AUTO_INCREMENT,
+      username varchar(255) NOT NULL,
+      itemId int NOT NULL,
+      PRIMARY KEY (id),
+      FOREIGN KEY (username) REFERENCES user(username),
+      FOREIGN KEY (itemId) REFERENCES item(itemId)
+    )
+    """
+
     cursor.execute(itemCreate)
     cursor.execute(categoryCreate)
     cursor.execute(categoryToItemCreate)
     cursor.execute(reviewCreate)
+    cursor.execute(purchaseCreate)
+    cursor.execute(favoriteSellerCreate)
+    cursor.execute(favoriteItemCreate)
 
-    testItemsData = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate)
+    testItemsData = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate, bought)
     VALUES
-    (1, 'John', 'Samsung Galaxy S22 Ultra', 'Powerful Galaxy S22 Ultra.', 130000, DATE('2023-11-04')),
-    (2, 'Alice', 'MacBook Pro 2023', 'The latest MacBook Pro with advanced features.', 200000, DATE('2023-12-01')),
-    (3, 'Bob', 'Sony PlayStation 5 Pro', 'Experience gaming like never before with PS5 Pro.', 45000, DATE('2023-03-16')),
-    (4, 'Emma', 'Canon EOS R5', 'A professional-grade mirrorless camera for photographers.', 300000, DATE('2023-11-04')),
-    (5, 'Michael', 'Dell XPS 15 Laptop', 'Powerful performance in a sleek design.', 140000, DATE('2023-08-29'));
+    (1, 'John', 'Samsung Galaxy S22 Ultra', 'Powerful Galaxy S22 Ultra.', 130000, DATE('2023-11-04'), false),
+    (2, 'Alice', 'MacBook Pro 2023', 'The latest MacBook Pro with advanced features.', 200000, DATE('2023-12-01'), false),
+    (3, 'Bob', 'Sony PlayStation 5 Pro', 'Experience gaming like never before with PS5 Pro.', 45000, DATE('2023-03-16'), true),
+    (4, 'Emma', 'Canon EOS R5', 'A professional-grade mirrorless camera for photographers.', 300000, DATE('2023-11-04'), false),
+    (5, 'Michael', 'Dell XPS 15 Laptop', 'Powerful performance in a sleek design.', 140000, DATE('2023-08-29'), false),
+    (6, 'Michael', 'Wireless Headphones', 'High-quality headphones without the wires.', 25000, DATE('2023-08-29'), false),
+    (7, 'Emma', 'Nintendo Switch', 'Lightweight, compact, and fun for the whole family.', 29999, DATE('2023-11-16'), false),
+    (8, 'John', 'Samsung Galaxy S22 Case', 'Great, strong case in the color Red.', 2500, DATE('2023-11-04'), true),
+    (9, 'Michael', 'Xbox Series S', 'The latest Xbox with next-gen speed and performance.', 34999, DATE('2023-08-29'), true),
+    (10, 'Emma', 'iPhone 13', 'Great phone in the color Midnight.', 60000, DATE('2023-10-09'), false);  
     """ 
     testCategoryData = """INSERT INTO category(title) VALUES
-      ('Samsung'),
-      ('Cellphone'),
-      ('Android'),
-      ('Laptop'),
-      ('Apple'),
-      ('MacBook'),
-      ('Gaming'),
-      ('Console'),
-      ('Sony'),
-      ('Camera'),
-      ('Photography'),
-      ('Canon'),
-      ('Dell'),
-      ('Windows');
+    ('Samsung'),
+    ('Cellphone'),
+    ('Android'),
+    ('Laptop'),
+    ('Apple'),
+    ('MacBook'),
+    ('Gaming'),
+    ('Console'),
+    ('Sony'),
+    ('Camera'),
+    ('Photography'),
+    ('Canon'),
+    ('Dell'),
+    ('Windows'),
+    ('Headphones'),
+    ('Nintendo'),
+    ('Case'),
+    ('Xbox');
     """
     testCategoryToItemData = """
     INSERT INTO categoryToItem (categoryTitle, itemID)
     VALUES
-        ('Samsung', 1),
-        ('Cellphone', 1),
-        ('Android', 1),
-        ('Laptop', 2),
-        ('Apple', 2),
-        ('MacBook', 2),
-        ('Gaming', 3),
-        ('Console', 3),
-        ('Sony', 3),
-        ('Camera', 4),
-        ('Photography', 4),
-        ('Canon', 4),
-        ('Laptop', 5),
-        ('Dell', 5),
-        ('Windows', 5);
+    ('Samsung', 1),
+    ('Cellphone', 1),
+    ('Android', 1),
+    ('Laptop', 2),
+    ('Apple', 2),
+    ('MacBook', 2),
+    ('Gaming', 3),
+    ('Console', 3),
+    ('Sony', 3),
+    ('Camera', 4),
+    ('Photography', 4),
+    ('Canon', 4),
+    ('Laptop', 5),
+    ('Dell', 5),
+    ('Windows', 5),
+    ('Headphones', 6),
+    ('Gaming', 7),
+    ('Console', 7),
+    ('Nintendo', 7),
+    ('Samsung', 8),
+    ('Cellphone', 8),
+    ('Case', 8),
+    ('Gaming', 9),
+    ('Console', 9),
+    ('Xbox', 9),
+    ('Apple', 10),
+    ('Cellphone', 10);
     """ 
     testReviewData = """
     INSERT INTO review(itemId, username, rating, description, date)
     VALUES
-    (1, 'John', 2, 'it was alright', DATE('2023-10-02')),
-    (2, 'Alice', 3, 'terrible product', DATE('2022-09-23')),
-    (3, 'Bob', 0, 'truly amazing', DATE('2021-05-21')),
-    (4, 'Emma', 0, 'greatest product I have ever received', DATE('2020-01-14')),
-    (5, 'Michael', 1, 'cured cancer, but could have been better', DATE('2019-02-10'));
+    (3, 'Alice', 3, 'Arrived broken!', DATE('2023-11-05')),
+    (8, 'Alice', 3, 'terrible product.', DATE('2023-11-10')),
+    (5, 'Bob', 0, 'truly amazing', DATE('2023-09-21')),
+    (6, 'Emma', 0, 'greatest product I have ever received', DATE('2023-10-14')),
+    (9, 'Bob', 0, 'WOW!', DATE('2023-09-01')),
+    (4, 'John', 1, 'cured cancer, but could have been better', DATE('2023-11-10'));
+    """
+
+    testPurchaseData = """
+    INSERT INTO purchase(username, itemId)
+    VALUES
+    ('Alice', 3),
+    ('Alice', 8),
+    ('Bob', 9)
     """
 
     cursor.execute(testItemsData)
     cursor.execute(testCategoryData)
     cursor.execute(testCategoryToItemData)
     cursor.execute(testReviewData)
+    cursor.execute(testPurchaseData)
 
     db.commit()
 
