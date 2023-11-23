@@ -18,18 +18,16 @@ const Items = () => {
 
         console.log(buyItem);
 
-        // const options = {
+        // fetch("http://localhost:5000/api/buyItem", {
         //     method: "POST",
         //     headers: {
         //         "Content-Type": "application/json"
         //     },
         //     body: JSON.stringify(buyItem)
-        // };
-
-        // fetch("http://localhost:5000/api/buyItem", options)
-        //     .then(response => response.json())
-        //     .then(jsonData => console.log(jsonData))
-        //     .catch(err => console.log(err));
+        // })
+        // .then(response => response.json())
+        // .then(jsonData => console.log(jsonData))
+        // .catch(err => console.log(err));
     }
 
     const closeReviewForm = () => {
@@ -61,6 +59,7 @@ const Items = () => {
                 spacing={2}
                 divider={<Divider flexItem />}
                 justifyContent={"space-between"}
+                paddingTop={5}
                 >
                 {data && data.map((item) => (
                     <Item key={item.id} {...item} buyHandler={() => buyHandler(item.id)} reviewHandler={() => setItemToReview(item)} />
