@@ -382,6 +382,7 @@ def insertItem():
   itemDesc  = request.json['itemDesc']
   itemCategory = request.json['itemCategory']
   itemPrice = request.json['itemPrice']
+  bought = bool(False)
   placeDate = date.today()
 
 
@@ -399,8 +400,8 @@ def insertItem():
     if itemCount is not None and itemCount >= 3:
       return jsonify({ "message":"Too many items inserted today."}), 400
 
-    sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %s)"
-    values = (username, itemTitle, itemDesc, itemPrice, today_sql) 
+    sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate, bought) VALUES (%s, %s, %s, %s, %s, %s)"
+    values = (username, itemTitle, itemDesc, itemPrice, today_sql, bought) 
     cursor.execute(sql, values)
 
     db.commit()
