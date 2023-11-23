@@ -18,7 +18,7 @@ const MyItems = () => {
     }
 
     return (
-        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={10}>
+        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={5}>
             <Grid container spacing={2} maxWidth={400}>
                 <Grid item xs={6}>
                     <Button variant="outlined" onClick={toggleInsertForm}>Insert Item</Button>
@@ -26,8 +26,8 @@ const MyItems = () => {
                 <Grid item xs={6}>
                     <Button variant="outlined" onClick={getMyItems}>View My Items</Button>
                 </Grid>
+                {displayForm ? <InsertItemForm /> : <></>}
             </Grid>
-            {displayForm ? <InsertItemForm /> : <></>}
         </Stack>
     )
 }
