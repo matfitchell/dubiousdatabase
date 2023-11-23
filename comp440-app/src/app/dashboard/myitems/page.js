@@ -27,7 +27,7 @@ const MyItems = () => {
                     <Button variant="outlined" onClick={getMyItems}>View My Items</Button>
                 </Grid>
             </Grid>
-            <InsertItemForm />
+            {displayForm ? <InsertItemForm /> : <></>}
         </Stack>
     )
 }
