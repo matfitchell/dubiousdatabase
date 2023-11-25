@@ -742,6 +742,120 @@ def review_item():
   
   return jsonify({ "message":"Review inserted."})
 
+@app.route('/api/six', methods=["GET"])
+def six():
+  # Display all the users who never posted any "excellent" items: an item is excellent if at least
+  # three reviews are excellent.
+  cursor = db.cursor()
+
+  try:
+    sql = 'SELECT DISTINCT username FROM user WHERE username NOT IN(\
+      SELECT DISTINCT username FROM item where itemId IN\
+      (SELECT DISTINCT itemId FROM review WHERE rating = 0 GROUP BY itemId HAVING COUNT(*) > 2))'
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    print(f"6 result: {result}")
+    result = [x[0] for x in result]
+    return jsonify(result)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status":"failed",
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+
+@app.route('/api/seven', methods=["GET"])
+def seven():
+  # Display all users who never posted a poor review
+  cursor = db.cursor()
+
+  try:
+    sql = 'SELECT DISTINCT username FROM user WHERE username NOT IN (SELECT DISTINCT username FROM review WHERE rating = 3)'
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    print(f"7 result: {result}")
+    result = [x[0] for x in result]
+    return jsonify(result)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status":"failed",
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+
+@app.route('/api/eight', methods=["GET"])
+def eight():
+  # Display all users who posted poor reviews
+  cursor = db.cursor()
+
+  try:
+    sql = 'SELECT DISTINCT username FROM review WHERE username IN (SELECT DISTINCT username FROM review WHERE rating = 3)'
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    print(f"8 result: {result}")
+    result = [x[0] for x in result]
+    return jsonify(result)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status":"failed",
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+
+@app.route('/api/nine', methods=["GET"])
+def nine():
+  # Display users where for all their items, none have received a poor rating
+  cursor = db.cursor()
+
+  try:
+    sql = 'SELECT DISTINCT username FROM item WHERE itemId NOT IN (SELECT DISTINCT itemId FROM review WHERE rating = 3)'
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    print(f"9 result: {result}")
+    result = [x[0] for x in result]
+    return jsonify(result)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status":"failed",
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+
+@app.route('/api/ten', methods=["GET"])
+def ten():
+  # List a user pair such that they always gave each other excellent reviews
+  cursor = db.cursor()
+
+  try:
+    sql = 'SELECT DISTINCT R1.username, R2.username\
+          FROM review R1 JOIN review R2\
+          ON (SELECT username FROM item WHERE itemId = R1.itemId) = R2.username AND R1.username < R2.username\
+          WHERE R1.rating = 0 AND R2.rating = 0;'
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    print(f"10 result: {result}")
+    return jsonify(result)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status":"failed",
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
 
 @app.route('/api/sellers', methods=['GET'])
 def sellers():
