@@ -500,6 +500,53 @@ def buyItem():
     }
     return jsonify(errorResponse), 500
 
+@app.route('/api/purchases', methods=['GET'])
+def purchases():
+  formatted_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    username = request.args["username"]
+    query = "SELECT itemId FROM purchase WHERE username = %s"
+    cursor.execute(query, (username,))
+    item_ids = cursor.fetchall()
+
+    item_ids = [x[0] for x in item_ids]
+
+    for id in item_ids:
+      query = "SELECT itemTitle, itemDesc, itemPrice, username FROM item WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      item_result = cursor.fetchone()
+
+      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      category_titles = cursor.fetchall()
+
+      categories = [x[0] for x in category_titles]
+
+      formatted_item = {
+        "id": id,
+        "title": item_result[0],
+        "desc": item_result[1],
+        "price": item_result[2],
+        "seller": item_result[3],
+        "categories": categories
+      }
+
+      formatted_list.append(formatted_item)
+
+    return jsonify(formatted_list)
+
+  except Exception as e:
+    print(e)
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+  
+
 @app.route('/api/items', methods=['GET'])
 def items():
   formatted_list: list = []
@@ -595,6 +642,7 @@ def search():
         }
     return jsonify(response), 500
   
+
 @app.route('/api/reviewItem', methods=["POST"])
 def review_item():
   item_id = request.json['itemId']
@@ -639,7 +687,7 @@ def review_item():
     return jsonify(response), 500
   
   return jsonify({ "message":"Review inserted."})
-  
+
 
 if __name__ == '__main__':
   app.run(port=5000)
