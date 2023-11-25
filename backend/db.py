@@ -352,11 +352,25 @@ def initializeDb():
     ('Bob', 9)
     """
 
+    testFavorites = """
+    INSERT INTO favoriteSeller(username, favoriteUsername) VALUES
+    ('Alice', 'Bob'),
+    ('John', 'Bob'),
+    ('Alice', 'Emma'),
+    ('John', 'Emma'),
+    ('Emma', 'Bob'),
+    ('Bob', 'Emma'),
+    ('Emma', 'Michael'),
+    ('Bob', 'Michael'),
+    ('Michael', 'Bob');
+    """
+
     cursor.execute(testItemsData)
     cursor.execute(testCategoryData)
     cursor.execute(testCategoryToItemData)
     cursor.execute(testReviewData)
     cursor.execute(testPurchaseData)
+    cursor.execute(testFavorites)
 
     db.commit()
 
