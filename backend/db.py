@@ -378,10 +378,10 @@ def initializeDb():
 def insertItem():
   
   username = request.json['username']
-  itemTitle = request.json['itemTitle']
-  itemDesc  = request.json['itemDesc']
-  itemCategory = request.json['itemCategory']
-  itemPrice = request.json['itemPrice']
+  title = request.json['title']
+  desc  = request.json['desc']
+  categories = request.json['categories']
+  price = request.json['price']
   bought = bool(False)
   placeDate = date.today()
 
@@ -401,7 +401,7 @@ def insertItem():
       return jsonify({ "message":"Too many items inserted today."}), 400
 
     sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate, bought) VALUES (%s, %s, %s, %s, %s, %s)"
-    values = (username, itemTitle, itemDesc, itemPrice, today_sql, bought) 
+    values = (username, title, desc, price, today_sql, bought) 
     cursor.execute(sql, values)
 
     db.commit()
@@ -409,7 +409,15 @@ def insertItem():
     id = cursor.lastrowid
     print(f"Item ID: {id}")
 
-    for e in itemCategory:  
+    insertedItem = {
+      "id": id,
+      "title": title,
+      "desc": desc,
+      "categories": categories,
+      "price": price
+    }
+
+    for e in categories:  
       sql = "SELECT * FROM category WHERE title = %s"
       values = (e,)
       cursor.execute(sql,values)
@@ -432,10 +440,8 @@ def insertItem():
       "error":"AN EXCEPTION OCCURED." 
     }
     return jsonify(errorResponse), 500
-  response = {
-    "message":"successful insert"
-  }
-  return jsonify(response)
+  
+  return jsonify(insertedItem)
 
 
 @app.route('/api/search', methods=['GET'])
