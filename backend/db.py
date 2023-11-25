@@ -172,7 +172,6 @@ def logout():
 
 @app.route('/api/initializeDb', methods=['GET'])
 def initializeDb():
-
   cursor = db.cursor()
 
   try:
@@ -184,7 +183,7 @@ def initializeDb():
     cursor.execute("DROP TABLE IF EXISTS `favoriteSeller`")
     cursor.execute("DROP TABLE IF EXISTS `category`")
     
-    itemCreate = """
+    item_table = """
       CREATE TABLE item (
         itemId int NOT NULL AUTO_INCREMENT,
         username varchar(255) NOT NULL,
@@ -197,13 +196,13 @@ def initializeDb():
         FOREIGN KEY (username) REFERENCES user(username)
       )
     """
-    categoryCreate = """
+    category_table = """
       CREATE TABLE category (
         title varchar(255) NOT NULL,
         PRIMARY KEY(title)
       )
     """
-    categoryToItemCreate = """
+    category_to_item_table = """
       CREATE TABLE categoryToItem(
         matchId int NOT NULL AUTO_INCREMENT,
         itemId int NOT NULL,
@@ -213,8 +212,7 @@ def initializeDb():
         FOREIGN KEY (itemId) REFERENCES item(itemId)
       )
     """
-
-    reviewCreate = """
+    review_table = """
       CREATE TABLE review (
         reviewId int NOT NULL AUTO_INCREMENT,
         itemId int NOT NULL,
@@ -227,8 +225,7 @@ def initializeDb():
         FOREIGN KEY (username) REFERENCES user(username)
       )
     """
-
-    purchaseCreate = """
+    purchase_table = """
     CREATE TABLE purchase (
       id int NOT NULL AUTO_INCREMENT,
       username varchar(255) NOT NULL,
@@ -238,8 +235,7 @@ def initializeDb():
       FOREIGN KEY (itemId) REFERENCES item(itemId)
     )
     """
-
-    favoriteSellerCreate = """
+    favorite_seller_table = """
     CREATE TABLE favoriteSeller (
       id int NOT NULL AUTO_INCREMENT,
       username varchar(255) NOT NULL,
@@ -249,8 +245,7 @@ def initializeDb():
       FOREIGN KEY (favoriteUsername) REFERENCES user(username)
     )
     """
-    
-    favoriteItemCreate = """
+    favorite_item_table = """
     CREATE TABLE favoriteItem (
       id int NOT NULL AUTO_INCREMENT,
       username varchar(255) NOT NULL,
@@ -261,15 +256,15 @@ def initializeDb():
     )
     """
 
-    cursor.execute(itemCreate)
-    cursor.execute(categoryCreate)
-    cursor.execute(categoryToItemCreate)
-    cursor.execute(reviewCreate)
-    cursor.execute(purchaseCreate)
-    cursor.execute(favoriteSellerCreate)
-    cursor.execute(favoriteItemCreate)
+    cursor.execute(item_table)
+    cursor.execute(category_table)
+    cursor.execute(category_to_item_table)
+    cursor.execute(review_table)
+    cursor.execute(purchase_table)
+    cursor.execute(favorite_seller_table)
+    cursor.execute(favorite_item_table)
 
-    testItemsData = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate, bought)
+    test_items = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate, bought)
     VALUES
     (1, 'John', 'Samsung Galaxy S22 Ultra', 'Powerful Galaxy S22 Ultra.', 130000, DATE('2023-11-04'), false),
     (2, 'Alice', 'MacBook Pro 2023', 'The latest MacBook Pro with advanced features.', 200000, DATE('2023-12-01'), false),
@@ -282,7 +277,7 @@ def initializeDb():
     (9, 'Michael', 'Xbox Series S', 'The latest Xbox with next-gen speed and performance.', 34999, DATE('2023-08-29'), true),
     (10, 'Emma', 'iPhone 13', 'Great phone in the color Midnight.', 60000, DATE('2023-10-09'), false);  
     """ 
-    testCategoryData = """INSERT INTO category(title) VALUES
+    test_categories = """INSERT INTO category(title) VALUES
     ('Samsung'),
     ('Cellphone'),
     ('Android'),
@@ -302,7 +297,7 @@ def initializeDb():
     ('Case'),
     ('Xbox');
     """
-    testCategoryToItemData = """
+    test_category_to_items = """
     INSERT INTO categoryToItem (categoryTitle, itemID)
     VALUES
     ('Samsung', 1),
@@ -333,7 +328,7 @@ def initializeDb():
     ('Apple', 10),
     ('Cellphone', 10);
     """ 
-    testReviewData = """
+    test_reviews = """
     INSERT INTO review(itemId, username, rating, description, date)
     VALUES
     (3, 'Alice', 3, 'Arrived broken!', DATE('2023-11-05')),
@@ -343,16 +338,14 @@ def initializeDb():
     (9, 'Bob', 0, 'WOW!', DATE('2023-09-01')),
     (4, 'John', 1, 'cured cancer, but could have been better', DATE('2023-11-10'));
     """
-
-    testPurchaseData = """
+    test_purchases = """
     INSERT INTO purchase(username, itemId)
     VALUES
     ('Alice', 3),
     ('Alice', 8),
     ('Bob', 9)
     """
-
-    testFavorites = """
+    test_seller_favs = """
     INSERT INTO favoriteSeller(username, favoriteUsername) VALUES
     ('Alice', 'Bob'),
     ('John', 'Bob'),
@@ -365,32 +358,32 @@ def initializeDb():
     ('Michael', 'Bob');
     """
 
-    cursor.execute(testItemsData)
-    cursor.execute(testCategoryData)
-    cursor.execute(testCategoryToItemData)
-    cursor.execute(testReviewData)
-    cursor.execute(testPurchaseData)
-    cursor.execute(testFavorites)
+    cursor.execute(test_items)
+    cursor.execute(test_categories)
+    cursor.execute(test_category_to_items)
+    cursor.execute(test_reviews)
+    cursor.execute(test_purchases)
+    cursor.execute(test_seller_favs)
 
     db.commit()
 
-    response =    {
+    response = {
       "message":"Database initialized"
     }
 
     return jsonify(response)
   except Exception as e:
     print(e)
-  errorResponse = {
-    "status":"failed", 
-    "error":"AN EXCEPTION OCCURED." 
-  }
-  return jsonify(errorResponse), 500
+
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
 
 
 @app.route('/api/insertItem', methods=['POST'])
 def insertItem():
-  
   username = request.json['username']
   title = request.json['title']
   desc  = request.json['desc']
@@ -399,19 +392,18 @@ def insertItem():
   bought = bool(False)
   placeDate = date.today()
 
-
   today_sql = f"{placeDate.year}-{placeDate.month}-{placeDate.day}"
   
   cursor = db.cursor()
 
   try:
-    itemQuery = "SELECT COUNT(*) FROM item WHERE username = %s AND placeDate = CURDATE()"
+    item_query = "SELECT COUNT(*) FROM item WHERE username = %s AND placeDate = CURDATE()"
     values = (username,)
-    cursor.execute(itemQuery, values)
-    itemCount = cursor.fetchone()[0]
-    print(f"itemCount: {itemCount}")
+    cursor.execute(item_query, values)
+    item_count = cursor.fetchone()[0]
+    print(f"itemCount: {item_count}")
 
-    if itemCount is not None and itemCount >= 3:
+    if item_count is not None and item_count >= 3:
       return jsonify({ "message":"Too many items inserted today."}), 400
 
     sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate, bought) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -423,7 +415,7 @@ def insertItem():
     id = cursor.lastrowid
     print(f"Item ID: {id}")
 
-    insertedItem = {
+    inserted_item = {
       "id": id,
       "title": title,
       "desc": desc,
@@ -436,10 +428,12 @@ def insertItem():
       values = (e,)
       cursor.execute(sql,values)
       found = cursor.fetchone()
+
       if found is None:
         sql = "INSERT INTO category(title) VALUES (%s)"
         values = (e,)
         cursor.execute(sql,values)
+      
       sql = "INSERT INTO categoryToItem(itemId, categoryTitle) VALUES (%s,%s)"
       values = (id,e)
       cursor.execute(sql,values)
@@ -449,13 +443,13 @@ def insertItem():
     print(e)
     print(traceback.format_exc())
     
-    errorResponse = {
+    response = {
       "status":"failed", 
       "error":"AN EXCEPTION OCCURED." 
     }
-    return jsonify(errorResponse), 500
+    return jsonify(response), 500
   
-  return jsonify(insertedItem)
+  return jsonify(inserted_item)
 
 
 @app.route('/api/buyItem', methods=['POST'])
@@ -490,15 +484,15 @@ def buyItem():
       "message": "Item successfully purchased."
     }
     return jsonify(response)
-
   except Exception as e:
     print(e)
 
-    errorResponse = {
+    response = {
       "status":"failed", 
       "error":"AN EXCEPTION OCCURED." 
     }
-    return jsonify(errorResponse), 500
+    return jsonify(response), 500
+
 
 @app.route('/api/purchases', methods=['GET'])
 def purchases():
@@ -537,7 +531,6 @@ def purchases():
       formatted_list.append(formatted_item)
 
     return jsonify(formatted_list)
-
   except Exception as e:
     print(e)
     response = {
@@ -579,7 +572,6 @@ def items():
       formatted_list.append(formatted_item)
 
     return jsonify(formatted_list)
-  
   except Exception as e:
     print(e)
     response = {
@@ -591,7 +583,6 @@ def items():
 
 @app.route('/api/search', methods=['GET'])
 def search():
-
   foramtted_list: list = []
 
   cursor = db.cursor()
@@ -631,7 +622,6 @@ def search():
       foramtted_list.append(item)
 
     return jsonify(foramtted_list)
-
   except Exception as e:
     print(e)
     print(traceback.format_exc())
@@ -708,7 +698,6 @@ def sellers():
       sellers_list.append(seller)
 
     return jsonify(sellers_list)
-  
   except Exception as e:
     print(e)
     print(traceback.format_exc())
