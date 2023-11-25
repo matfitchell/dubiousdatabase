@@ -332,8 +332,13 @@ def initializeDb():
     INSERT INTO review(itemId, username, rating, description, date)
     VALUES
     (3, 'Alice', 3, 'Arrived broken!', DATE('2023-11-05')),
+    (1, 'Alice', 3, 'Awful!', DATE('2023-12-04')),
     (8, 'Alice', 3, 'terrible product.', DATE('2023-11-10')),
     (5, 'Bob', 0, 'truly amazing', DATE('2023-09-21')),
+    (5, 'John', 0, 'perfect', DATE('2023-04-11')),
+    (5, 'Emma', 0, 'innovative', DATE('2023-02-01')),
+    (1, 'Bob', 0, 'Amazing!', DATE('2023-12-04')),
+    (3, 'John', 0, 'Superb!', DATE('2023-12-04')),
     (6, 'Emma', 0, 'greatest product I have ever received', DATE('2023-10-14')),
     (9, 'Bob', 0, 'WOW!', DATE('2023-09-01')),
     (4, 'John', 1, 'cured cancer, but could have been better', DATE('2023-11-10'));
