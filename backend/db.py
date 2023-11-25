@@ -481,6 +481,9 @@ def buyItem():
     values = (username, itemId)
     cursor.execute(query, values)
 
+    query = "UPDATE item SET bought = true WHERE itemId = %s"
+    cursor.execute(query, (itemId,))
+
     db.commit()
 
     response = {
