@@ -170,7 +170,7 @@ def logout():
   return jsonify(response)
 
 
-@app.route('/api/initializeDb', methods=["GET"])
+@app.route('/api/initializeDb', methods=['GET'])
 def initializeDb():
 
   cursor = db.cursor()
@@ -643,7 +643,7 @@ def search():
     return jsonify(response), 500
   
 
-@app.route('/api/reviewItem', methods=["POST"])
+@app.route('/api/reviewItem', methods=['POST'])
 def review_item():
   item_id = request.json['itemId']
   username = request.json['username']
@@ -687,6 +687,37 @@ def review_item():
     return jsonify(response), 500
   
   return jsonify({ "message":"Review inserted."})
+
+
+@app.route('/api/sellers', methods=['GET'])
+def sellers():
+  sellers_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    query = "SELECT username FROM user"
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    for user in result:
+      seller = {
+        "username": user[0]
+      }
+
+      sellers_list.append(seller)
+
+    return jsonify(sellers_list)
+  
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status": "failed",
+      "error": "AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
 
 
 if __name__ == '__main__':
