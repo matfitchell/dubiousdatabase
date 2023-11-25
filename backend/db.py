@@ -444,6 +444,48 @@ def insertItem():
   return jsonify(insertedItem)
 
 
+@app.route('/api/items', methods=['GET'])
+def items():
+  formatted_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    username = request.args["username"]
+    query = "SELECT itemId, itemTitle, itemDesc, itemPrice FROM item WHERE username = %s"
+    cursor.execute(query, (username,))
+    items = cursor.fetchall()
+
+    for item in items:
+      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (item[0],))
+      # Returns pairs ex: [(string,), ...]
+      category_titles = cursor.fetchall()
+
+      # Get categories as strings from pairs
+      categories = [x[0] for x in category_titles]
+
+      formatted_item = {
+        "id": item[0],
+        "title": item[1],
+        "desc": item[2],
+        "categories": categories,
+        "price": item[3]
+      }
+
+      formatted_list.append(formatted_item)
+
+    return jsonify(formatted_list)
+  
+  except Exception as e:
+    print(e)
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+
+
 @app.route('/api/search', methods=['GET'])
 def search():
 
