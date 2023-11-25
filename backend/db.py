@@ -536,6 +536,156 @@ def review_item():
   
   return jsonify({ "message":"Review inserted."})
   
+@app.route('/api/one', methods = ["GET"])
+def getExpensive():
+
+  foramtted_list: list = []
+  cursor = db.cursor()
+  try:
+    query = """
+    WITH RankedItems AS (
+    SELECT
+        i.itemId,
+        i.itemTitle,
+        i.itemPrice,
+        c.title,
+        ROW_NUMBER() OVER (PARTITION BY c.title ORDER BY i.itemPrice DESC) AS rank_within_category
+    FROM
+        items i
+        JOIN categorytoitem itc ON i.itemID = itc.itemId
+        JOIN category c ON itc.title = c.title
+    )
+    SELECT
+      itemId,
+      itemTitle,
+      itemPrice,
+      title
+    FROM
+      RankedItems
+    WHERE
+      rank_within_category = 1;
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print(f"result: {result}")
+
+    for e in result:
+      item = {
+        "id":       e[0],
+        "title" :   e[1],
+        "price" :   e[2],
+        "category": e[3]
+      }
+
+      print(f"Most Expensive Item: {item}")
+      foramtted_list.append(item)
+    
+    return jsonify(foramtted_list)
+
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
+
+@app.route('/api/two?category1=<cat1>&category2=<cat2>', methods = ["GET"])
+def two_item_one_day():
+  foramtted_list: list = []
+  cursor = db.cursor()
+  
+  try:
+    query = """
+    SELECT
+      u.username
+    FROM
+      users u
+      JOIN items i1 ON u.username = i1.username
+      JOIN itemtocategory itc1 ON i1.itemId = itc1.itemId
+      JOIN category c1 ON itc1.title = c1.title
+      JOIN items i2 ON u.username = i2.username
+      JOIN itemtocategory itc2 ON i2.itemId = itc2.itemId
+      JOIN category c2 ON itc2.title = c2.title
+    WHERE
+      i1.placeDate = i2.placeDate
+      AND i1.itemId <> i2.itemId
+      AND c1.category = 'X'  -- Replace 'X' with the first category
+      AND c2.category = 'Y'  -- Replace 'Y' with the second category
+
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print(f"result: {result}")
+
+    for e in result:
+      foramtted_list.append(e)
+
+    return jsonify(foramtted_list)
+
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
+
+app.route('/api/three?username=<username>', methods = ['GET'])
+def positive_comments():
+  foramtted_list: list = []
+  cursor = db.cursor()
+
+  try:
+    user = request.args["user"]
+    query = """
+    SELECT
+        i.itemId,
+        i.itemTitle,
+        i.itemDesc,
+        i.itemPrice,
+        i.bought,
+        GROUP_CONCAT(DISTINCT c.title) AS category
+    FROM
+        items i
+        JOIN itemtocategory itc ON i.itemId = itc.itemId
+        JOIN category c ON itc.itemTitle = c.title
+        JOIN comments co ON i.itemId = co.itemId
+        LEFT JOIN commentratings cr ON co.commentId = cr.commentId
+    WHERE
+        cr.rating IS NULL OR cr.rating NOT IN ('Bad', 'Fair')
+    GROUP BY
+        i.itemId, i.itemTitle, i.itemDesc, i.itemPrice, i.bought;
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print(f"result: {result}")
+
+    for e in result:
+      item = {
+        "id":           e[0],
+        "title":        e[1],
+        "Description":  e[2],
+        "price" :       e[3],
+        "bought" :      e[4]
+      }
+      foramtted_list.append(item)
+
+    return jsonify(foramtted_list)
+  
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500  
 
 if __name__ == '__main__':
   app.run(port=5000)
