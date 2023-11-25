@@ -1,34 +1,64 @@
 "use client";
 
 import InsertItemForm from "@/app/components/insertItemForm";
-import { Stack, Grid, Button } from "@mui/material";
-import { useState } from "react";
+import MyItem from "@/app/components/myItem";
+import { Stack, Grid, Button, Divider, Container } from "@mui/material";
+import { useEffect, useState } from "react";
 
 const MyItems = () => {
-    const [myItems, setMyItems] = useState();
-    const [displayForm, setDisplayForm] = useState();
+    const [myItems, setMyItems] = useState(null);
+    const [displayForm, setDisplayForm] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams ({
+            username: localStorage.getItem("user")
+        });
+
+        fetch(`http://localhost:5000/api/items?${params}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => response.json())
+        .then(json => {
+            if (json && !json.error) {
+                setMyItems(json);
+            }
+        })
+        .catch(err => console.log(err));
+    }, [])
 
     const toggleInsertForm = () => {
         displayForm ? setDisplayForm(false) : setDisplayForm(true);
     }
 
-    const getMyItems = () => {
-        // Fetch my items
-        console.log("View My Items clicked.");
+    // Update list with newly inserted item
+    const updateMyItems = (item) => {
+        // let newList = myItems.push(item);
+        setMyItems([...myItems, item]);
     }
 
     return (
-        <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={10}>
-            <Grid container spacing={2} maxWidth={400}>
-                <Grid item xs={6}>
-                    <Button variant="outlined" onClick={toggleInsertForm}>Insert Item</Button>
+        <Container maxWidth="md">
+            <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={5}>
+                <Grid container spacing={2} maxWidth={400}>
+                    <Grid item xs={12} textAlign={"center"}>
+                        <Button variant="outlined" onClick={toggleInsertForm}>Insert New Item</Button>
+                    </Grid>
+                    {displayForm ? <InsertItemForm insertedItem={updateMyItems} closeInsertForm={toggleInsertForm}/> : <></>}
                 </Grid>
-                <Grid item xs={6}>
-                    <Button variant="outlined" onClick={getMyItems}>View My Items</Button>
-                </Grid>
-            </Grid>
-            {displayForm ? <InsertItemForm /> : <></>}
-        </Stack>
+            </Stack>
+            <Stack
+                spacing={2}
+                divider={<Divider flexItem />}
+                justifyContent={"space-between"}
+                paddingTop={5}
+            >
+                {myItems && myItems.map((item) => (
+                    <MyItem key={item.id} {...item} />
+                ))}
+            </Stack>
+        </Container>
     )
 }
 

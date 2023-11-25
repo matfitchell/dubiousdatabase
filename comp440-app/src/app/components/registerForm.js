@@ -28,7 +28,6 @@ const RegisterForm = () => {
           },
           body: JSON.stringify(userObj)
         }).then(response => {
-            console.log(response.ok);
             if (response.ok) {
                 registerSuccess();
                 return;

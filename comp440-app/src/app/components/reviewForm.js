@@ -80,6 +80,14 @@ const ReviewForm = ({itemId, itemTitle, closeReviewForm}) => {
                         <Button type="submit" variant="outlined">
                             Submit Review
                         </Button>
+                        <Button 
+                            variant="outlined" 
+                            color="error"
+                            onClick={closeReviewForm}
+                            sx={{ marginLeft: "5px"}}
+                            >
+                            Close
+                        </Button>
                     </Grid>
                 </Grid>
             </form>

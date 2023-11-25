@@ -10,7 +10,8 @@ const Nav = () => {
     const navs = [
         { name: "Dashboard", path: '/dashboard'},
         { name: "Items", path: '/dashboard/items'},
-        { name: "Favorites", path: '/dashboard/favorites'},
+        { name: "Favorite Items", path: '/dashboard/favoriteItems'},
+        { name: "Favorite Sellers", path: '/dashboard/favoriteSellers'},
         { name: "My Items", path: '/dashboard/myitems'},
         { name: "Purchases", path: '/dashboard/purchases'},
         { name: "Logout", path: '/logout'}

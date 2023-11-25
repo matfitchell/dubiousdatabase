@@ -14,7 +14,8 @@ CORS(app)
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password=os.environ.get("DB_PASS"),
+  # password=os.environ.get("DB_PASS"),
+  password="password",
   database="dubiousdb"
 )
 
@@ -352,11 +353,25 @@ def initializeDb():
     ('Bob', 9)
     """
 
+    testFavorites = """
+    INSERT INTO favoriteSeller(username, favoriteUsername) VALUES
+    ('Alice', 'Bob'),
+    ('John', 'Bob'),
+    ('Alice', 'Emma'),
+    ('John', 'Emma'),
+    ('Emma', 'Bob'),
+    ('Bob', 'Emma'),
+    ('Emma', 'Michael'),
+    ('Bob', 'Michael'),
+    ('Michael', 'Bob');
+    """
+
     cursor.execute(testItemsData)
     cursor.execute(testCategoryData)
     cursor.execute(testCategoryToItemData)
     cursor.execute(testReviewData)
     cursor.execute(testPurchaseData)
+    cursor.execute(testFavorites)
 
     db.commit()
 
@@ -378,10 +393,10 @@ def initializeDb():
 def insertItem():
   
   username = request.json['username']
-  itemTitle = request.json['itemTitle']
-  itemDesc  = request.json['itemDesc']
-  itemCategory = request.json['itemCategory']
-  itemPrice = request.json['itemPrice']
+  title = request.json['title']
+  desc  = request.json['desc']
+  categories = request.json['categories']
+  price = request.json['price']
   bought = bool(False)
   placeDate = date.today()
 
@@ -401,7 +416,7 @@ def insertItem():
       return jsonify({ "message":"Too many items inserted today."}), 400
 
     sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate, bought) VALUES (%s, %s, %s, %s, %s, %s)"
-    values = (username, itemTitle, itemDesc, itemPrice, today_sql, bought) 
+    values = (username, title, desc, price, today_sql, bought) 
     cursor.execute(sql, values)
 
     db.commit()
@@ -409,7 +424,15 @@ def insertItem():
     id = cursor.lastrowid
     print(f"Item ID: {id}")
 
-    for e in itemCategory:  
+    insertedItem = {
+      "id": id,
+      "title": title,
+      "desc": desc,
+      "categories": categories,
+      "price": price
+    }
+
+    for e in categories:  
       sql = "SELECT * FROM category WHERE title = %s"
       values = (e,)
       cursor.execute(sql,values)
@@ -432,10 +455,92 @@ def insertItem():
       "error":"AN EXCEPTION OCCURED." 
     }
     return jsonify(errorResponse), 500
-  response = {
-    "message":"successful insert"
-  }
-  return jsonify(response)
+  
+  return jsonify(insertedItem)
+
+
+@app.route('/api/buyItem', methods=['POST'])
+def buyItem():
+  username = request.json['username']
+  itemId = request.json['itemId']
+
+  cursor = db.cursor()
+
+  try:
+    query = "SELECT * FROM purchase WHERE username = %s AND itemId = %s"
+    values = (username, itemId)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+
+    if result != None:
+      response = {
+        "message":"Item has already been purchased."
+      }
+      return jsonify(response), 400
+
+    query = "INSERT INTO purchase(username, itemId) VALUES (%s, %s)"
+    values = (username, itemId)
+    cursor.execute(query, values)
+
+    query = "UPDATE item SET bought = true WHERE itemId = %s"
+    cursor.execute(query, (itemId,))
+
+    db.commit()
+
+    response = {
+      "message": "Item successfully purchased."
+    }
+    return jsonify(response)
+
+  except Exception as e:
+    print(e)
+
+    errorResponse = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(errorResponse), 500
+
+@app.route('/api/items', methods=['GET'])
+def items():
+  formatted_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    username = request.args["username"]
+    query = "SELECT itemId, itemTitle, itemDesc, itemPrice FROM item WHERE username = %s"
+    cursor.execute(query, (username,))
+    items = cursor.fetchall()
+
+    for item in items:
+      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (item[0],))
+      # Returns pairs ex: [(string,), ...]
+      category_titles = cursor.fetchall()
+
+      # Get categories as strings from pairs
+      categories = [x[0] for x in category_titles]
+
+      formatted_item = {
+        "id": item[0],
+        "title": item[1],
+        "desc": item[2],
+        "categories": categories,
+        "price": item[3]
+      }
+
+      formatted_list.append(formatted_item)
+
+    return jsonify(formatted_list)
+  
+  except Exception as e:
+    print(e)
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
 
 
 @app.route('/api/search', methods=['GET'])
