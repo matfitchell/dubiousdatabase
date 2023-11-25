@@ -685,7 +685,79 @@ def positive_comments():
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
         }
-    return jsonify(response), 500  
+    return jsonify(response), 500
 
+
+app.route('/api/four')
+def most_items_on_date():
+  cursor = db.cursor()
+  date = request.json['placeDate']
+
+  try:
+    query = """
+    SELECT
+        u.username,
+        COUNT(i.itemId) AS num_items_posted
+    FROM
+        users u
+        JOIN items i ON u.username = i.username
+    WHERE
+        DATE(i.placeDate) = %s  
+    GROUP BY
+        u.username
+    ORDER BY
+        num_items_posted DESC
+    LIMIT 1;
+    """
+
+    cursor.execute(query, date)
+    db.commit()
+  
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
+  
+
+app.route('/api/five?user1=<x>&user2=<y>', methods = ["GET"])
+def mutual_favs():
+  foramtted_list: list = []
+  cursor = db.cursor()
+
+  try:
+    query = """
+        SELECT
+            u.username
+        FROM
+            users u
+            JOIN favorites f1 ON u.username = f1.username
+            JOIN favorites f2 ON u.username = f2.username
+        WHERE
+            f1.username = :user1  -- Replace :user1 with the value of user1 from the request parameters
+            AND f2.username = :user2  -- Replace :user2 with the value of user2 from the request parameters
+            AND u.username NOT IN (:user1, :user2);  -- Exclude users X and Y
+        """
+    
+    cursor.execute(query)
+    result = cursor.fetchall()
+    for e in result:
+      foramtted_list.append(e)
+
+    return jsonify(foramtted_list)
+
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
 if __name__ == '__main__':
   app.run(port=5000)
