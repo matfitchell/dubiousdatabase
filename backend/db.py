@@ -458,6 +458,45 @@ def insertItem():
   return jsonify(insertedItem)
 
 
+@app.route('/api/buyItem', methods=['POST'])
+def buyItem():
+  username = request.json['username']
+  itemId = request.json['itemId']
+
+  cursor = db.cursor()
+
+  try:
+    query = "SELECT * FROM purchase WHERE username = %s AND itemId = %s"
+    values = (username, itemId)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+
+    if result != None:
+      response = {
+        "message":"Item has already been purchased."
+      }
+      return jsonify(response), 400
+
+    query = "INSERT INTO purchase(username, itemId) VALUES (%s, %s)"
+    values = (username, itemId)
+    cursor.execute(query, values)
+
+    db.commit()
+
+    response = {
+      "message": "Item successfully purchased."
+    }
+    return jsonify(response)
+
+  except Exception as e:
+    print(e)
+
+    errorResponse = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(errorResponse), 500
+
 @app.route('/api/items', methods=['GET'])
 def items():
   formatted_list: list = []
