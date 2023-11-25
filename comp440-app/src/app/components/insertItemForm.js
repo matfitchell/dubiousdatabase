@@ -1,28 +1,53 @@
 "use client";
 
-import { Stack, Grid, TextField, Button } from "@mui/material";
+import { Stack, Grid, TextField, Button, Alert } from "@mui/material";
 import { useState } from "react";
 
-const InsertItemForm = () => {
+const InsertItemForm = ({insertedItem, closeInsertForm}) => {
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
     const [categories, setCategories] = useState("");
     const [price, setPrice] = useState("");
+    const [alertText, setAlertText] = useState(null);
 
     const handleInsert = (item) => {
-        fetch("http://localhost:5000/api/insertItem", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(item)
-        }).then(response => {
-            return response.json();
+        // fetch("http://localhost:5000/api/insertItem", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json"
+        //   },
+        //   body: JSON.stringify(item)
+        // }).then(response => {
+        //     return response.json();
+        // })
+        // .then(data => {
+        //     // Get newly inserted item with id from db
+        //     if (data && data.id) {
+        //         const newItem = {
+        //             id: data.id,
+        //             title: data.title,
+        //             desc: data.desc,
+        //             categories: data.categories,
+        //             price: data.price
+        //         }
+
+        //         setAlertText(null);
+
+        //         insertedItem(newItem);
+        //         closeInsertForm;
+        //     } else if (data && data.message) {
+        //         setAlertText("Error: ", data.message);
+        //     }
+        // })
+        // .catch(err => console.log(err));
+
+        insertedItem({
+            title: item.itemTitle,
+            desc: item.itemDesc,
+            categories: item.itemCategory,
+            price: item.itemPrice,
+            id: Math.random() * 1000 + 1
         })
-        .then(json => {
-            console.log(json);
-        })
-        .catch(err => console.log(err));
     }
 
     const handleSubmit = (e) => {
@@ -51,6 +76,7 @@ const InsertItemForm = () => {
         <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={10}>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2} maxWidth={400}>
+                {alertText ? <Grid item xs={12}><Alert severity="error">{alertText}</Alert></Grid> : <></>}
                     <Grid item xs={12}>
                         <TextField 
                             required 
@@ -93,6 +119,14 @@ const InsertItemForm = () => {
                     </Grid>
                     <Grid item xs={12} textAlign={"center"}>
                         <Button type="submit" variant="outlined">Insert</Button>
+                        <Button 
+                            variant="outlined" 
+                            color="error"
+                            onClick={closeInsertForm}
+                            sx={{ marginLeft: "5px"}}
+                        >
+                            Close
+                        </Button>
                     </Grid>
                 </Grid>
             </form>
