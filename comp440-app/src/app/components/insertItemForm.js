@@ -11,43 +11,35 @@ const InsertItemForm = ({insertedItem, closeInsertForm}) => {
     const [alertText, setAlertText] = useState(null);
 
     const handleInsert = (item) => {
-        // fetch("http://localhost:5000/api/insertItem", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json"
-        //   },
-        //   body: JSON.stringify(item)
-        // }).then(response => {
-        //     return response.json();
-        // })
-        // .then(data => {
-        //     // Get newly inserted item with id from db
-        //     if (data && data.id) {
-        //         const newItem = {
-        //             id: data.id,
-        //             title: data.title,
-        //             desc: data.desc,
-        //             categories: data.categories,
-        //             price: data.price
-        //         }
-
-        //         setAlertText(null);
-
-        //         insertedItem(newItem);
-        //         closeInsertForm;
-        //     } else if (data && data.message) {
-        //         setAlertText("Error: ", data.message);
-        //     }
-        // })
-        // .catch(err => console.log(err));
-
-        insertedItem({
-            title: item.itemTitle,
-            desc: item.itemDesc,
-            categories: item.itemCategory,
-            price: item.itemPrice,
-            id: Math.random() * 1000 + 1
+        fetch("http://localhost:5000/api/insertItem", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(item)
+        }).then(response => {
+            return response.json();
         })
+        .then(data => {
+            // Get newly inserted item with id from db
+            if (data && data.id) {
+                const newItem = {
+                    id: data.id,
+                    title: data.title,
+                    desc: data.desc,
+                    categories: data.categories,
+                    price: data.price
+                }
+
+                setAlertText(null);
+                closeInsertForm();
+
+                insertedItem(newItem);
+            } else if (data && data.message) {
+                setAlertText(data.message);
+            }
+        })
+        .catch(err => console.log(err));
     }
 
     const handleSubmit = (e) => {
@@ -63,10 +55,10 @@ const InsertItemForm = ({insertedItem, closeInsertForm}) => {
 
         let item = {
             username: localStorage.getItem("user"),
-            itemTitle: title,
-            itemDesc: desc,
-            itemCategory: categoryArr,
-            itemPrice: priceInt,
+            title: title,
+            desc: desc,
+            categories: categoryArr,
+            price: priceInt,
         }
 
         handleInsert(item);

@@ -3,35 +3,30 @@
 import InsertItemForm from "@/app/components/insertItemForm";
 import MyItem from "@/app/components/myItem";
 import { Stack, Grid, Button, Divider, Container } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const MyItems = () => {
-    let testItems = [
-        {
-            id: 1,
-            title: "Test Item 1",
-            desc: "Test item Desc",
-            categories: ["Test", "Random"],
-            price: 12300
-        },
-        {
-            id: 2,
-            title: "Test Item 2",
-            desc: "Test item 2 Desc",
-            categories: ["Test", "Random", "Item"],
-            price: 4400
-        },
-        {
-            id: 3,
-            title: "Test Item 3",
-            desc: "Test item 3 Desc",
-            categories: ["Test", "Item"],
-            price: 5500
-        },
-    ]
-
-    const [myItems, setMyItems] = useState(testItems);
+    const [myItems, setMyItems] = useState(null);
     const [displayForm, setDisplayForm] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams ({
+            username: localStorage.getItem("user")
+        });
+
+        fetch(`http://localhost:5000/api/items?${params}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => response.json())
+        .then(json => {
+            if (json && !json.error) {
+                setMyItems(json);
+            }
+        })
+        .catch(err => console.log(err));
+    }, [])
 
     const toggleInsertForm = () => {
         displayForm ? setDisplayForm(false) : setDisplayForm(true);
