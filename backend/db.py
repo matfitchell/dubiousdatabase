@@ -358,12 +358,21 @@ def initializeDb():
     ('Michael', 'Bob');
     """
 
+    test_item_favs = """
+    INSERT INTO favoriteItem(username, itemId) VALUES
+    ('Alice', 6),
+    ('Alice', 7),
+    ('Bob', 2),
+    ('Bob', 10);
+    """
+
     cursor.execute(test_items)
     cursor.execute(test_categories)
     cursor.execute(test_category_to_items)
     cursor.execute(test_reviews)
     cursor.execute(test_purchases)
     cursor.execute(test_seller_favs)
+    cursor.execute(test_item_favs)
 
     db.commit()
 
@@ -708,6 +717,53 @@ def sellers():
     }
     return jsonify(response), 500
 
+# Favorites endpoints below
+@app.route('/api/item/favorites', methods=['POST'])
+def itemFavorites():
+  username = request.json["username"]
+
+  formatted_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    query = "SELECT itemId FROM favoriteItem WHERE username = %s"
+    cursor.execute(query, (username,))
+    result = cursor.fetchall()
+
+    itemIds = [x[0] for x in result]
+
+    for id in itemIds:
+      query = "SELECT itemTitle, itemDesc, itemPrice, username FROM item WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      item_result = cursor.fetchone()
+
+      # Get categories
+      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      result = cursor.fetchall()
+
+      categories = [x[0] for x in result]
+
+      formatted_item = {
+        "id": id,
+        "title": item_result[0],
+        "desc": item_result[1],
+        "price": item_result[2],
+        "seller": item_result[3],
+        "categories": categories
+      }
+
+      formatted_list.append(formatted_item)
+
+    return jsonify(formatted_list)
+  except Exception as e:
+    print(e)
+    response = {
+      "status": "failed",
+      "error": "AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
 
 if __name__ == '__main__':
   app.run(port=5000)
