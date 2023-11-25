@@ -14,7 +14,8 @@ CORS(app)
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password=os.environ.get("DB_PASS"),
+  # password=os.environ.get("DB_PASS"),
+  password="password",
   database="dubiousdb"
 )
 
@@ -480,6 +481,9 @@ def buyItem():
     query = "INSERT INTO purchase(username, itemId) VALUES (%s, %s)"
     values = (username, itemId)
     cursor.execute(query, values)
+
+    query = "UPDATE item SET bought = true WHERE itemId = %s"
+    cursor.execute(query, (itemId,))
 
     db.commit()
 
