@@ -640,7 +640,60 @@ def search():
           "error":"AN EXCEPTION OCCURED." 
         }
     return jsonify(response), 500
+
+# Search endpoint that filters items inserted by user
+@app.route('/api/searchFiltered', methods=['GET'])
+def searchFiltered():
+  foramtted_list: list = []
+
+  cursor = db.cursor()
   
+  try:
+    username = request.args["username"]
+    term = request.args["term"]
+    query = "SELECT itemId FROM categoryToItem WHERE categoryTitle = %s"
+    cursor.execute(query, (term,))
+    ids = cursor.fetchall()
+
+    print(f"ids: {ids}")
+
+    for id in ids:
+      sql = "SELECT itemTitle, itemDesc, itemPrice, username FROM item WHERE itemId = %s AND username != %s"
+      values = (id[0], username)
+      cursor.execute(sql,values)
+      result = cursor.fetchone()
+
+      if result == None:
+        continue
+
+      sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      values = (id[0],)
+      cursor.execute(sql,values)
+      categoryTitles = cursor.fetchall()
+      categories = [x[0] for x in categoryTitles]
+
+      item = {
+        "id": id[0],
+        "title": result[0],
+        "desc" : result[1],
+        "price" : result[2],
+        "username": result[3],
+        "categories" : categories 
+        } 
+
+      foramtted_list.append(item)
+
+    return jsonify(foramtted_list)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
+
 
 @app.route('/api/reviewItem', methods=['POST'])
 def review_item():
@@ -717,6 +770,7 @@ def sellers():
     }
     return jsonify(response), 500
 
+
 # Favorites endpoints below
 @app.route('/api/item/favorites', methods=['POST'])
 def itemFavorites():
@@ -764,6 +818,7 @@ def itemFavorites():
       "error": "AN EXCEPTION OCCURED." 
     }
     return jsonify(response), 500
+
 
 if __name__ == '__main__':
   app.run(port=5000)
