@@ -14,6 +14,7 @@ const SearchBar = ({onSearch}) => {
             <OutlinedInput 
                 variant="outlined"
                 onChange={updateSearch}
+                placeholder="Type in a category..."
                 startAdornment={
                     <InputAdornment position="start">
                         <SearchIcon />
