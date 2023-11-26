@@ -658,7 +658,7 @@ def searchFiltered():
     print(f"ids: {ids}")
 
     for id in ids:
-      sql = "SELECT itemTitle, itemDesc, itemPrice, username FROM item WHERE itemId = %s AND username != %s"
+      sql = "SELECT itemTitle, itemDesc, itemPrice, username, bought FROM item WHERE itemId = %s AND username != %s"
       values = (id[0], username)
       cursor.execute(sql,values)
       result = cursor.fetchone()
@@ -678,9 +678,11 @@ def searchFiltered():
         "desc" : result[1],
         "price" : result[2],
         "username": result[3],
+        "isBought": bool(result[4]),
         "categories" : categories 
         } 
 
+      print(f"item {id} is: {item}")
       foramtted_list.append(item)
 
     return jsonify(foramtted_list)
