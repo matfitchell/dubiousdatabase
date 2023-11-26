@@ -649,6 +649,7 @@ def getExpensive():
   foramtted_list: list = []
   cursor = db.cursor()
   try:
+    #done
     query = """
     WITH RankedItems AS (
     SELECT
@@ -709,22 +710,23 @@ def two_item_one_day():
   values =(X, Y)
   
   try:
+    #done
     query = """
     SELECT
       u.username
     FROM
-      user u
-      JOIN item i1 ON u.username = i1.username
-      JOIN categorytoitem itc1 ON i1.itemId = itc1.itemId
-      JOIN category c1 ON itc1.title = c1.title
-      JOIN item i2 ON u.username = i2.username
-      JOIN categorytoitem itc2 ON i2.itemId = itc2.itemId
-      JOIN category c2 ON itc2.title = c2.title
+        user u
+        JOIN item i1 ON u.username = i1.username
+        JOIN categorytoitem itc1 ON i1.itemId = itc1.itemId
+        JOIN category c1 ON itc1.categoryTitle = c1.title
+        JOIN item i2 ON u.username = i2.username
+        JOIN categorytoitem itc2 ON i2.itemId = itc2.itemId
+        JOIN category c2 ON itc2.categoryTitle = c2.title
     WHERE
-      i1.placeDate = i2.placeDate
-      AND i1.itemId <> i2.itemId
-      AND c1.category = %s  
-      AND c2.category = %s  
+        i1.placeDate = i2.placeDate
+        AND i1.itemId <> i2.itemId
+        AND c1.title = %s
+        AND c2.title = %s;
 
     """
     cursor.execute(query,values)
@@ -753,6 +755,7 @@ def positive_comments():
 
   try:
     user = request.args["user"]
+    #done
     query = """
     SELECT
         i.itemId,
@@ -807,15 +810,16 @@ def most_items_on_date():
   date = request.json['placeDate']
 
   try:
+    #done
     query = """
-    SELECT
+   SELECT
         u.username,
         COUNT(i.itemId) AS num_items_posted
     FROM
         user u
         JOIN item i ON u.username = i.username
     WHERE
-        DATE(i.placeDate) = %s  
+        DATE(i.placeDate) = %s
     GROUP BY
         u.username
     ORDER BY
@@ -846,19 +850,19 @@ def mutual_favs():
   user1 = request.json["x"]
   user2 = request.json["y"]
   values = (user1, user2)
-
+  #query done
   try:
     query = """
-        SELECT
-            u.username
-        FROM
-            user u
-            JOIN favorites f1 ON u.username = f1.username
-            JOIN favorites f2 ON u.username = f2.username
-        WHERE
-            f1.username = %s            
-            AND f2.username %s  
-            AND u.username NOT IN (f1, f2);
+            SELECT
+                u.username
+            FROM
+                user u
+                JOIN favoriteseller f1 ON u.username = f1.username
+                JOIN favoriteseller f2 ON u.username = f2.username
+            WHERE
+                f1.username = %s
+                AND f2.username = %s
+                AND u.username NOT IN (f1.username, f2.username);
         """
     
     cursor.execute(query, values)
