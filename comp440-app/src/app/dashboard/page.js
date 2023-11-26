@@ -35,7 +35,7 @@ const Dashboard = () => {
         { name: "7. Never Posted Poor Review", component: <List7/>},
         { name: "3. All Items Posted Good or Better", component: <Form3/>},
         { name: "8. Only Posted Poor Reviews", component: <List8/>},
-        { name: "4. Most Items on Date", component: <Form4/>},
+        { name: "4. Most Items Posted on Date", component: <Form4/>},
         { name: "9. Never Poor Reviews", component: <List9/>},
         { name: "5. Users Favorited By Two Users", component: <Form5/>},
         { name: "10. Pair Always Excellent", component: <Pair10/>}
