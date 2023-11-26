@@ -8,6 +8,8 @@ from flask_cors import CORS
 from datetime import date
 
 
+
+
 app = Flask(__name__)
 CORS(app)
 
@@ -701,27 +703,31 @@ def getExpensive():
 def two_item_one_day():
   foramtted_list: list = []
   cursor = db.cursor()
+
+  X = request.json['cat1']
+  Y = request.json['cat2']
+  values =(X, Y)
   
   try:
     query = """
     SELECT
       u.username
     FROM
-      users u
-      JOIN items i1 ON u.username = i1.username
-      JOIN itemtocategory itc1 ON i1.itemId = itc1.itemId
+      user u
+      JOIN item i1 ON u.username = i1.username
+      JOIN categorytoitem itc1 ON i1.itemId = itc1.itemId
       JOIN category c1 ON itc1.title = c1.title
-      JOIN items i2 ON u.username = i2.username
-      JOIN itemtocategory itc2 ON i2.itemId = itc2.itemId
+      JOIN item i2 ON u.username = i2.username
+      JOIN categorytoitem itc2 ON i2.itemId = itc2.itemId
       JOIN category c2 ON itc2.title = c2.title
     WHERE
       i1.placeDate = i2.placeDate
       AND i1.itemId <> i2.itemId
-      AND c1.category = 'X'  -- Replace 'X' with the first category
-      AND c2.category = 'Y'  -- Replace 'Y' with the second category
+      AND c1.category = %s  -- Replace 'X' with the first category
+      AND c2.category = %s  -- Replace 'Y' with the second category
 
     """
-    cursor.execute(query)
+    cursor.execute(query,values)
     result = cursor.fetchall()
     print(f"result: {result}")
 
@@ -756,17 +762,19 @@ def positive_comments():
         i.bought,
         GROUP_CONCAT(DISTINCT c.title) AS category
     FROM
-        items i
-        JOIN itemtocategory itc ON i.itemId = itc.itemId
-        JOIN category c ON itc.itemTitle = c.title
-        JOIN comments co ON i.itemId = co.itemId
-        LEFT JOIN commentratings cr ON co.commentId = cr.commentId
+        item i
+        JOIN categorytoitem itc ON i.itemId = itc.itemId
+        JOIN category c ON itc.itemId = c.title
+        JOIN review co ON i.itemId = co.itemId
+        LEFT JOIN review cr ON co.reviewId = cr.reviewId
     WHERE
-        cr.rating IS NULL OR cr.rating NOT IN ('Bad', 'Fair')
+        cr.rating IS NULL OR cr.rating NOT IN (0, 1, 2)
     GROUP BY
         i.itemId, i.itemTitle, i.itemDesc, i.itemPrice, i.bought;
+
+
     """
-    cursor.execute(query)
+    cursor.execute(query, user)
     result = cursor.fetchall()
     print(f"result: {result}")
 
@@ -804,8 +812,8 @@ def most_items_on_date():
         u.username,
         COUNT(i.itemId) AS num_items_posted
     FROM
-        users u
-        JOIN items i ON u.username = i.username
+        user u
+        JOIN item i ON u.username = i.username
     WHERE
         DATE(i.placeDate) = %s  
     GROUP BY
@@ -813,6 +821,7 @@ def most_items_on_date():
     ORDER BY
         num_items_posted DESC
     LIMIT 1;
+
     """
 
     cursor.execute(query, date)
@@ -834,21 +843,25 @@ def mutual_favs():
   foramtted_list: list = []
   cursor = db.cursor()
 
+  user1 = request.json["x"]
+  user2 = request.json["y"]
+  values = (user1, user2)
+
   try:
     query = """
         SELECT
             u.username
         FROM
-            users u
+            user u
             JOIN favorites f1 ON u.username = f1.username
             JOIN favorites f2 ON u.username = f2.username
         WHERE
-            f1.username = :user1  -- Replace :user1 with the value of user1 from the request parameters
-            AND f2.username = :user2  -- Replace :user2 with the value of user2 from the request parameters
-            AND u.username NOT IN (:user1, :user2);  -- Exclude users X and Y
+            f1.username = %s            
+            AND f2.username %s  
+            AND u.username NOT IN (f1, f2);
         """
     
-    cursor.execute(query)
+    cursor.execute(query, values)
     result = cursor.fetchall()
     for e in result:
       foramtted_list.append(e)
