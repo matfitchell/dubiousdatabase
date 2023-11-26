@@ -658,9 +658,9 @@ def getExpensive():
         c.title,
         ROW_NUMBER() OVER (PARTITION BY c.title ORDER BY i.itemPrice DESC) AS rank_within_category
     FROM
-        items i
-        JOIN categorytoitem itc ON i.itemID = itc.itemId
-        JOIN category c ON itc.title = c.title
+        item i
+        JOIN categorytoitem ON i.itemID = itemId
+        JOIN category c ON title = c.title
     )
     SELECT
       itemId,
@@ -723,8 +723,8 @@ def two_item_one_day():
     WHERE
       i1.placeDate = i2.placeDate
       AND i1.itemId <> i2.itemId
-      AND c1.category = %s  -- Replace 'X' with the first category
-      AND c2.category = %s  -- Replace 'Y' with the second category
+      AND c1.category = %s  
+      AND c2.category = %s  
 
     """
     cursor.execute(query,values)
