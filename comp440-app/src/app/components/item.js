@@ -1,19 +1,5 @@
 import {Button, Chip, Grid, Stack, Typography} from '@mui/material';
 
-/*
-{
-  "categories": [
-    "Laptop",
-    "Apple",
-    "MacBook"
-  ],
-  "desc": "The latest MacBook Pro with advanced features.",
-  "id": 2,
-  "price": 200000,
-  "title": "MacBook Pro 2023"
-}
-*/
-
 const Item = ({ id, title, categories, desc, price, seller, isBought, buyHandler, reviewHandler }) => {
   return (
     <Grid container spacing={2} key={id} justifyContent={"space-between"}>

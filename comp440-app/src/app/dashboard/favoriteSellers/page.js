@@ -1,8 +1,8 @@
 "use client";
 
 import FavoriteSeller from "@/app/components/favoriteSeller";
-import {Stack, Grid, Button, Container, Divider} from "@mui/material";
-import { useState } from "react";
+import {Stack, Button, Container, Divider, OutlinedInput, Alert} from "@mui/material";
+import { useState, useEffect } from "react";
 
 const FavoriteSellers = () => {
     let testSellers = [
@@ -20,22 +20,73 @@ const FavoriteSellers = () => {
         }
     ];
     const [favorites, setFavorites] = useState(testSellers);
+    const [username, setUsername] = useState("");
+    const [alertText, setAlertText] = useState(null);
+
+    useEffect(() => {
+        const userObj = {
+            username: localStorage.getItem("user")
+        };
+
+        // fetch("http://localhost:5000/api/seller/favorites", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify(userObj)
+        // }).then(response => response.json())
+        // .then(json => {
+        //     if (json && json.message) {
+        //         setAlertText(json.message);
+        //     } else {
+        //         setFavorites(json);
+        //     }
+        // }).catch(err => console.log(err))
+    }, []);
 
     const handleRemove = (username) => {
         let filtered = favorites.filter((user) => user.username !== username);
         setFavorites(filtered);
     }
 
+    const handleAdd = (user) => {
+        const addObj = {
+            username: localStorage.getItem("user"),
+            userToFav: user
+        }
+
+        // fetch("http://localhost:5000/api/seller/favorite", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify(addObj)
+        // }).then(response => {
+        //     if (response.ok) {
+        //         setAlertText(null);
+        //         setFavorites([...favorites, { username: user }])
+        //     }
+        //     return response.json();
+        // })
+        // .then(json => {
+        //     if (json && json.message) {
+        //         setAlertText(json.message);
+        //     }
+        // }).catch(err => console.log(err))
+    }
+
     return (
         <Container maxWidth="md">
-            <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={5}>
-                <Grid container spacing={2} maxWidth={400}>
-                    <Grid item xs={12} textAlign={"center"}>
-                        <Button variant="outlined">
-                            Add Seller to Favorites
-                        </Button>
-                    </Grid>
-                </Grid>
+            {alertText ? <Alert severity="error" sx={{ marginTop: "20px"}}>{alertText}</Alert> : <></>}
+            <Stack direction={"row"} justifyContent={"center"} alignItems={"stretch"} paddingTop={5}>
+                <OutlinedInput 
+                    required 
+                    type="text"
+                    placeholder="Enter a username..."
+                    onChange={(e) => setUsername(e.target.value)} />
+                <Button variant="outlined" onClick={() => handleAdd(username)}>
+                    Add Seller to Favorites
+                </Button>
             </Stack>
             <Stack
             spacing={2}

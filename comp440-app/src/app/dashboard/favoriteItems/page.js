@@ -1,7 +1,7 @@
 "use client";
 
 import FavoriteItem from "@/app/components/favoriteItem";
-import {Stack, Grid, Button, Container, Divider, Chip, } from "@mui/material";
+import {Stack, Alert, Button, Container, Divider, OutlinedInput} from "@mui/material";
 import { useEffect, useState } from "react";
 
 const FavoriteItems = () => {
@@ -33,6 +33,29 @@ const FavoriteItems = () => {
     ];
 
     const [favorites, setFavorites] = useState(testFavs);
+    const [item, setItem] = useState("");
+    const [alertText, setAlertText] = useState(null);
+
+    useEffect(() => {
+        const userObj = {
+            username: localStorage.getItem("user")
+        };
+
+        // fetch("http://localhost:5000/api/item/favorites", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify(userObj)
+        // }).then(response => response.json())
+        // .then(json => {
+        //     if (json && json.message) {
+        //         setAlertText(json.message);
+        //     } else {
+        //         setFavorites(json);
+        //     }
+        // })
+    }, []);
 
     const handleRemove = (id) => {
         // Remove item with id from favorites
@@ -40,17 +63,47 @@ const FavoriteItems = () => {
         setFavorites(filtered);
     }
 
+    const handleAdd = (id) => {
+        const addObj = {
+            username: localStorage.getItem("user"),
+            itemId: id
+        }
+
+        // fetch("http://localhost:5000/api/item/favorite", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify(addObj)
+        // }).then(response => {
+        //     if (response.ok) {
+        //         setAlertText(null);
+        //     }
+        //     return response.json();
+        // })
+        // .then(json => {
+        //     if (json && json.message) {
+        //         setAlertText(json.message);
+        //     }
+        //     else if (json && json.id) {
+        //         setFavorites([...favorites, json]);
+        //     }
+        // });
+    }
+
 
     return (
         <Container maxWidth="md">
-            <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={5}>
-                <Grid container spacing={2} maxWidth={400}>
-                    <Grid item xs={12} textAlign={"center"}>
-                        <Button variant="outlined">
-                            Add Item to Favorites
-                        </Button>
-                    </Grid>
-                </Grid>
+            {alertText ? <Alert severity="error" sx={{ marginTop: "20px"}}>{alertText}</Alert> : <></>}
+            <Stack direction={"row"} justifyContent={"center"} alignItems={"stretch"} paddingTop={5}>
+                <OutlinedInput 
+                    required
+                    type="number"
+                    placeholder="Enter an item id..."
+                    onChange={(e) => setItem(e.target.value)} />
+                <Button variant="outlined" onClick={() => handleAdd(item)}>
+                    Add Item to Favorites
+                </Button>
             </Stack>
             <Stack
             spacing={2}
