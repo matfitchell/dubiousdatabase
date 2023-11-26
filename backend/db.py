@@ -659,8 +659,8 @@ def getExpensive():
         ROW_NUMBER() OVER (PARTITION BY c.title ORDER BY i.itemPrice DESC) AS rank_within_category
     FROM
         item i
-        JOIN categorytoitem ON i.itemID = itemId
-        JOIN category c ON title = c.title
+        JOIN categorytoitem ci ON i.itemID = ci.itemId
+        JOIN category c ON ci.categoryTitle = c.title
     )
     SELECT
       itemId,
