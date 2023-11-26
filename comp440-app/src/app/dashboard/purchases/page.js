@@ -1,11 +1,11 @@
 "use client";
 
 import Purchase from "@/app/components/purchase";
-import {Container, Stack, Divider} from "@mui/material";
+import {Container, Stack, Divider, Typography} from "@mui/material";
 import { useEffect, useState } from "react";
 
 const Purchases = () => {
-    const [purchases, setPurchases] =useState(null);
+    const [purchases, setPurchases] = useState([]);
 
     useEffect(() => {
         const params = new URLSearchParams ({
@@ -34,9 +34,9 @@ const Purchases = () => {
             justifyContent={"space-between"}
             paddingTop={5}
             >
-            {purchases && purchases.map((item) => (
+            {!purchases.length == 0 ? purchases.map((item) => (
                 <Purchase key={item.id} {...item} />
-            ))}
+            )) : <Typography variant="h6" textAlign={"center"}>No items have been purchased yet.</Typography>}
             </Stack>
         </Container>
     )
