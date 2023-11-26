@@ -2,36 +2,29 @@
 
 import Purchase from "@/app/components/purchase";
 import {Container, Stack, Divider} from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Purchases = () => {
-    let testPurchases = [
-        {
-            id: 1,
-            title: "Phone case",
-            desc: "Great phone case.",
-            categories: ["Cellphone", "iPhone"],
-            seller: "Emma",
-            price: 2300
-        },
-        {
-            id: 2,
-            title: "iPhone 13",
-            desc: "Description here.",
-            categories: ["Apple", "iPhone", "Cellphone"],
-            seller: "Emma",
-            price: 2300
-        },
-        {
-            id: 3,
-            title: "Designer Bag",
-            desc: "Great quality and never been used.",
-            categories: ["Bag"],
-            seller: "Alice",
-            price: 12000
-        }
-    ]
-    const [purchases, setPurchases] =useState(testPurchases);
+    const [purchases, setPurchases] =useState(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams ({
+            username: localStorage.getItem("user"),
+        })
+
+        fetch(`http://localhost:5000/api/purchases?${params}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => response.json())
+        .then(json => {
+            if (json && !json.message) {
+                setPurchases(json);
+            }
+        })
+        .catch(err => console.log(err));
+    }, [])
 
     return (
         <Container maxWidth="md">
