@@ -754,8 +754,8 @@ def positive_comments():
   cursor = db.cursor()
 
   try:
-    user = request.args["user"]
-    #done
+    user = request.args["username"]
+    #done// returns nothing atm
     query = """
     SELECT
         i.itemId,
@@ -770,11 +770,13 @@ def positive_comments():
         JOIN category c ON itc.itemId = c.title
         JOIN review co ON i.itemId = co.itemId
         LEFT JOIN review cr ON co.reviewId = cr.reviewId
+        JOIN user u_posted ON i.username = u_posted.username
+        JOIN user u_review ON co.username = u_review.username
     WHERE
-        cr.rating IS NULL OR cr.rating NOT IN (0, 1, 2)
+        (cr.rating IS NULL OR cr.rating NOT IN (0, 1, 2))
+        AND u_posted.username = %s  
     GROUP BY
         i.itemId, i.itemTitle, i.itemDesc, i.itemPrice, i.bought;
-
 
     """
     cursor.execute(query, user)
@@ -850,19 +852,30 @@ def mutual_favs():
   user1 = request.json["x"]
   user2 = request.json["y"]
   values = (user1, user2)
-  #query done
+  #query done// data in question
   try:
     query = """
+    SELECT
+        u.username
+    FROM
+        user u
+    WHERE
+        u.username IN (
             SELECT
-                u.username
+                f1.username
             FROM
-                user u
-                JOIN favoriteseller f1 ON u.username = f1.username
-                JOIN favoriteseller f2 ON u.username = f2.username
+                favoriteseller f1
             WHERE
                 f1.username = %s
-                AND f2.username = %s
-                AND u.username NOT IN (f1.username, f2.username);
+        )
+        AND u.username IN (
+            SELECT
+                f2.username
+            FROM
+                favoriteseller f2
+            WHERE
+                f2.username = %s
+        );
         """
     
     cursor.execute(query, values)
