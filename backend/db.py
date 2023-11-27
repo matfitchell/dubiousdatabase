@@ -769,15 +769,12 @@ def positive_comments():
         JOIN categorytoitem itc ON i.itemId = itc.itemId
         JOIN category c ON itc.itemId = c.title
         JOIN review co ON i.itemId = co.itemId
-        LEFT JOIN review cr ON co.reviewId = cr.reviewId
         JOIN user u_posted ON i.username = u_posted.username
-        JOIN user u_review ON co.username = u_review.username
     WHERE
-        (cr.rating IS NULL OR cr.rating NOT IN (0, 1, 2))
-        AND u_posted.username = %s  
+        (co.rating IS NULL OR co.rating IN (0, 1))
+        AND u_posted.username = %s
     GROUP BY
         i.itemId, i.itemTitle, i.itemDesc, i.itemPrice, i.bought;
-
     """
     cursor.execute(query, user)
     result = cursor.fetchall()
@@ -852,7 +849,7 @@ def mutual_favs():
   user1 = request.json["x"]
   user2 = request.json["y"]
   values = (user1, user2)
-  #query done// data in question
+  #query done
   try:
     query = """
     SELECT
@@ -862,19 +859,19 @@ def mutual_favs():
     WHERE
         u.username IN (
             SELECT
-                f1.username
+                fs.username
             FROM
-                favoriteseller f1
+                favoriteseller fs
             WHERE
-                f1.username = %s
+                fs.favoriteUsername = %s
         )
         AND u.username IN (
             SELECT
-                f2.username
+                fs.username
             FROM
-                favoriteseller f2
+                favoriteseller fs
             WHERE
-                f2.username = %s
+                fs.favoriteUsername = %s
         );
         """
     
