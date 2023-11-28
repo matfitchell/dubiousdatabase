@@ -38,4 +38,5 @@ Jonathan N
 Mitchell M
 - Implemented backend for item insertion 
 - Implemented backend for search by category
-- Greatly assisted by teammates, helped with additonal components//teammates where possible 
+- Greatly assisted by teammates, helped with additonal components//teammates where possible
+-Implemented Phase 2 requirements 1-5 
