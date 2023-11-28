@@ -994,7 +994,9 @@ def mutual_favs():
           "status":"failed", 
           "error":"AN EXCEPTION OCCURED." 
         }
-    return jsonify(response), 500@app.route('/api/six', methods=["GET"])
+    return jsonify(response), 500
+
+@app.route('/api/six', methods=["GET"])
 def six():
   # Display all the users who never posted any "excellent" items: an item is excellent if at least
   # three reviews are excellent.
