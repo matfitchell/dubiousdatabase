@@ -762,12 +762,9 @@ def positive_comments():
         i.itemTitle,
         i.itemDesc,
         i.itemPrice,
-        i.bought,
-        GROUP_CONCAT(DISTINCT c.title) AS category
+        i.bought
     FROM
         item i
-        JOIN categorytoitem itc ON i.itemId = itc.itemId
-        JOIN category c ON itc.itemId = c.title
         JOIN review co ON i.itemId = co.itemId
         JOIN user u_posted ON i.username = u_posted.username
     WHERE
