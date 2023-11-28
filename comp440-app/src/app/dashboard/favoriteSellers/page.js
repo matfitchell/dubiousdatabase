@@ -45,8 +45,27 @@ const FavoriteSellers = () => {
     }, []);
 
     const handleRemove = (username) => {
-        let filtered = favorites.filter((user) => user.username !== username);
-        setFavorites(filtered);
+        const removeObj = {
+            username: localStorage.getItem("user"),
+            userToDel: username
+        }
+
+        // fetch("http://localhost:5000/api/seller/favorite", {
+        //     method: "DELETE",
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify(removeObj)
+        // }).then(response => {
+        //     if (response.ok) {
+        //         let filtered = favorites.filter((user) => user.username !== username);
+        //         setFavorites(filtered);
+        //     }
+        // })
+        // .then(json => {
+        //     console.log(json)
+        // })
+        // .catch(err => console.log(err));
     }
 
     const handleAdd = (user) => {

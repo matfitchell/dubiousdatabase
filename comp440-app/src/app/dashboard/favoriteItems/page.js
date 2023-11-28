@@ -59,8 +59,27 @@ const FavoriteItems = () => {
 
     const handleRemove = (id) => {
         // Remove item with id from favorites
-        let filtered = favorites.filter((item) => item.id !== id);
-        setFavorites(filtered);
+        const removeObj = {
+            username: localStorage.getItem("user"),
+            id: id
+        }
+
+        // fetch("http://localhost:5000/api/item/favorite", {
+        //     method: "DELETE",
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: JSON.stringify(removeObj)
+        // }).then(response => {
+        //     if (response.ok) {
+        //         let filtered = favorites.filter((item) => item.id !== id);
+        //         setFavorites(filtered);
+        //     }
+        //     return response.json()
+        // })
+        // .then(json => {
+
+        // }).catch(err => console.log(err))
     }
 
     const handleAdd = (id) => {
