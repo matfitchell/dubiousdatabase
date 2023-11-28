@@ -1,12 +1,16 @@
 "use client";
 
 import {Stack, Typography} from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const Pair10 = () => {
     const [data, setData] = useState([]);
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
+
         fetch("http://localhost:5000/api/ten", {
             method: "GET",
             headers: {
@@ -19,6 +23,8 @@ const Pair10 = () => {
             }
         })
         .catch(err => console.log(err));
+
+        dataFetch.current = true;
     }, [])
 
     return (

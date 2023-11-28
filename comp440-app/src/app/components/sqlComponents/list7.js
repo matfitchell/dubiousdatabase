@@ -1,13 +1,17 @@
 "use client";
 
 import {Stack} from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const List7 = () => {
     // const testData = ["Alice", "John", "Emma"];
     const [data, setData] = useState([]);
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
+
         fetch("http://localhost:5000/api/seven", {
             method: "GET",
             headers: {
@@ -20,6 +24,8 @@ const List7 = () => {
             }
         })
         .catch(err => console.log(err));
+
+        dataFetch.current = true;
     }, [])
 
     return (

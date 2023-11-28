@@ -1,32 +1,15 @@
 "use client";
 
 import { Stack} from "@mui/material"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const List1 = () => {
-    // const testdata = [
-    //     {
-
-    //         id: 2,
-    //         title: "something else",
-    //         desc: "desc",
-    //         category: "Laptop",
-    //         price: 10000,
-    //     },
-    //     {
-
-    //         id: 3,
-    //         title: "Test Title 2",
-    //         desc: "Test desc 3",
-    //         category: "Cellphone",
-    //         price: 50000,
-
-    //     },
-    
-    // ]
     const [data, setData] = useState([]);
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
         fetch("http://localhost:5000/api/one", {
             method: "GET",
             headers: {
@@ -37,6 +20,8 @@ const List1 = () => {
             setData(json);
         })
         .catch(err => console.log(err));
+
+        dataFetch.current = true;
     }, [])
 
     return (
