@@ -23,7 +23,10 @@ globalCursor = db.cursor()
 # Drop user table if it exists
 globalCursor.execute("DROP TABLE IF EXISTS `review`")
 globalCursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
+globalCursor.execute("DROP TABLE IF EXISTS `purchase`")
+globalCursor.execute("DROP TABLE IF EXISTS `favoriteItem`")
 globalCursor.execute("DROP TABLE IF EXISTS `item`")
+globalCursor.execute("DROP TABLE IF EXISTS `favoriteSeller`")
 globalCursor.execute("DROP TABLE IF EXISTS `category`")
 globalCursor.execute("DROP TABLE IF EXISTS `user`")
 
@@ -167,18 +170,20 @@ def logout():
   return jsonify(response)
 
 
-@app.route('/api/initializeDb', methods=["GET"])
+@app.route('/api/initializeDb', methods=['GET'])
 def initializeDb():
-
   cursor = db.cursor()
 
   try:
     cursor.execute("DROP TABLE IF EXISTS `review`")
     cursor.execute("DROP TABLE IF EXISTS `categoryToItem`")
+    cursor.execute("DROP TABLE IF EXISTS `purchase`")
+    cursor.execute("DROP TABLE IF EXISTS `favoriteItem`")
     cursor.execute("DROP TABLE IF EXISTS `item`")
+    cursor.execute("DROP TABLE IF EXISTS `favoriteSeller`")
     cursor.execute("DROP TABLE IF EXISTS `category`")
     
-    itemCreate = """
+    item_table = """
       CREATE TABLE item (
         itemId int NOT NULL AUTO_INCREMENT,
         username varchar(255) NOT NULL,
@@ -186,17 +191,18 @@ def initializeDb():
         itemDesc varchar(255) NOT NULL,
         itemPrice int NOT NULL,
         placeDate DATE NOT NULL,
+        bought BOOLEAN NOT NULL,
         PRIMARY KEY (itemId),
         FOREIGN KEY (username) REFERENCES user(username)
       )
     """
-    categoryCreate = """
+    category_table = """
       CREATE TABLE category (
         title varchar(255) NOT NULL,
         PRIMARY KEY(title)
       )
     """
-    categoryToItemCreate = """
+    category_to_item_table = """
       CREATE TABLE categoryToItem(
         matchId int NOT NULL AUTO_INCREMENT,
         itemId int NOT NULL,
@@ -206,8 +212,7 @@ def initializeDb():
         FOREIGN KEY (itemId) REFERENCES item(itemId)
       )
     """
-
-    reviewCreate = """
+    review_table = """
       CREATE TABLE review (
         reviewId int NOT NULL AUTO_INCREMENT,
         itemId int NOT NULL,
@@ -220,113 +225,198 @@ def initializeDb():
         FOREIGN KEY (username) REFERENCES user(username)
       )
     """
-
-    cursor.execute(itemCreate)
-    cursor.execute(categoryCreate)
-    cursor.execute(categoryToItemCreate)
-    cursor.execute(reviewCreate)
-
-    testItemsData = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate)
-    VALUES
-    (1, 'John', 'Samsung Galaxy S22 Ultra', 'Powerful Galaxy S22 Ultra.', 130000, DATE('2023-11-04')),
-    (2, 'Alice', 'MacBook Pro 2023', 'The latest MacBook Pro with advanced features.', 200000, DATE('2023-12-01')),
-    (3, 'Bob', 'Sony PlayStation 5 Pro', 'Experience gaming like never before with PS5 Pro.', 45000, DATE('2023-03-16')),
-    (4, 'Emma', 'Canon EOS R5', 'A professional-grade mirrorless camera for photographers.', 300000, DATE('2023-11-04')),
-    (5, 'Michael', 'Dell XPS 15 Laptop', 'Powerful performance in a sleek design.', 140000, DATE('2023-08-29'));
-    """ 
-    testCategoryData = """INSERT INTO category(title) VALUES
-      ('Samsung'),
-      ('Cellphone'),
-      ('Android'),
-      ('Laptop'),
-      ('Apple'),
-      ('MacBook'),
-      ('Gaming'),
-      ('Console'),
-      ('Sony'),
-      ('Camera'),
-      ('Photography'),
-      ('Canon'),
-      ('Dell'),
-      ('Windows');
+    purchase_table = """
+    CREATE TABLE purchase (
+      id int NOT NULL AUTO_INCREMENT,
+      username varchar(255) NOT NULL,
+      itemId int NOT NULL,
+      PRIMARY KEY (id),
+      FOREIGN KEY (username) REFERENCES user(username),
+      FOREIGN KEY (itemId) REFERENCES item(itemId)
+    )
     """
-    testCategoryToItemData = """
+    favorite_seller_table = """
+    CREATE TABLE favoriteSeller (
+      id int NOT NULL AUTO_INCREMENT,
+      username varchar(255) NOT NULL,
+      favoriteUsername varchar(255) NOT NULL,
+      PRIMARY KEY (id),
+      FOREIGN KEY (username) REFERENCES user(username),
+      FOREIGN KEY (favoriteUsername) REFERENCES user(username)
+    )
+    """
+    favorite_item_table = """
+    CREATE TABLE favoriteItem (
+      id int NOT NULL AUTO_INCREMENT,
+      username varchar(255) NOT NULL,
+      itemId int NOT NULL,
+      PRIMARY KEY (id),
+      FOREIGN KEY (username) REFERENCES user(username),
+      FOREIGN KEY (itemId) REFERENCES item(itemId)
+    )
+    """
+
+    cursor.execute(item_table)
+    cursor.execute(category_table)
+    cursor.execute(category_to_item_table)
+    cursor.execute(review_table)
+    cursor.execute(purchase_table)
+    cursor.execute(favorite_seller_table)
+    cursor.execute(favorite_item_table)
+
+    test_items = """INSERT INTO item (itemId, username, itemTitle, itemDesc, itemPrice, placeDate, bought)
+    VALUES
+    (1, 'John', 'Samsung Galaxy S22 Ultra', 'Powerful Galaxy S22 Ultra.', 130000, DATE('2023-11-04'), false),
+    (2, 'Alice', 'MacBook Pro 2023', 'The latest MacBook Pro with advanced features.', 200000, DATE('2023-12-01'), false),
+    (3, 'Bob', 'Sony PlayStation 5 Pro', 'Experience gaming like never before with PS5 Pro.', 45000, DATE('2023-03-16'), true),
+    (4, 'Emma', 'Canon EOS R5', 'A professional-grade mirrorless camera for photographers.', 300000, DATE('2023-11-04'), false),
+    (5, 'Michael', 'Dell XPS 15 Laptop', 'Powerful performance in a sleek design.', 140000, DATE('2023-08-29'), false),
+    (6, 'Michael', 'Wireless Headphones', 'High-quality headphones without the wires.', 25000, DATE('2023-08-29'), false),
+    (7, 'Emma', 'Nintendo Switch', 'Lightweight, compact, and fun for the whole family.', 29999, DATE('2023-11-16'), false),
+    (8, 'John', 'Samsung Galaxy S22 Case', 'Great, strong case in the color Red.', 2500, DATE('2023-11-04'), true),
+    (9, 'Michael', 'Xbox Series S', 'The latest Xbox with next-gen speed and performance.', 34999, DATE('2023-08-29'), true),
+    (10, 'Emma', 'iPhone 13', 'Great phone in the color Midnight.', 60000, DATE('2023-10-09'), false);  
+    """ 
+    test_categories = """INSERT INTO category(title) VALUES
+    ('Samsung'),
+    ('Cellphone'),
+    ('Android'),
+    ('Laptop'),
+    ('Apple'),
+    ('MacBook'),
+    ('Gaming'),
+    ('Console'),
+    ('Sony'),
+    ('Camera'),
+    ('Photography'),
+    ('Canon'),
+    ('Dell'),
+    ('Windows'),
+    ('Headphones'),
+    ('Nintendo'),
+    ('Case'),
+    ('Xbox');
+    """
+    test_category_to_items = """
     INSERT INTO categoryToItem (categoryTitle, itemID)
     VALUES
-        ('Samsung', 1),
-        ('Cellphone', 1),
-        ('Android', 1),
-        ('Laptop', 2),
-        ('Apple', 2),
-        ('MacBook', 2),
-        ('Gaming', 3),
-        ('Console', 3),
-        ('Sony', 3),
-        ('Camera', 4),
-        ('Photography', 4),
-        ('Canon', 4),
-        ('Laptop', 5),
-        ('Dell', 5),
-        ('Windows', 5);
+    ('Samsung', 1),
+    ('Cellphone', 1),
+    ('Android', 1),
+    ('Laptop', 2),
+    ('Apple', 2),
+    ('MacBook', 2),
+    ('Gaming', 3),
+    ('Console', 3),
+    ('Sony', 3),
+    ('Camera', 4),
+    ('Photography', 4),
+    ('Canon', 4),
+    ('Laptop', 5),
+    ('Dell', 5),
+    ('Windows', 5),
+    ('Headphones', 6),
+    ('Gaming', 7),
+    ('Console', 7),
+    ('Nintendo', 7),
+    ('Samsung', 8),
+    ('Cellphone', 8),
+    ('Case', 8),
+    ('Gaming', 9),
+    ('Console', 9),
+    ('Xbox', 9),
+    ('Apple', 10),
+    ('Cellphone', 10);
     """ 
-    testReviewData = """
+    test_reviews = """
     INSERT INTO review(itemId, username, rating, description, date)
     VALUES
-    (1, 'John', 2, 'it was alright', DATE('2023-10-02')),
-    (2, 'Alice', 3, 'terrible product', DATE('2022-09-23')),
-    (3, 'Bob', 0, 'truly amazing', DATE('2021-05-21')),
-    (4, 'Emma', 0, 'greatest product I have ever received', DATE('2020-01-14')),
-    (5, 'Michael', 1, 'cured cancer, but could have been better', DATE('2019-02-10'));
+    (3, 'Alice', 3, 'Arrived broken!', DATE('2023-11-05')),
+    (8, 'Alice', 3, 'terrible product.', DATE('2023-11-10')),
+    (5, 'Bob', 0, 'truly amazing', DATE('2023-09-21')),
+    (6, 'Emma', 0, 'greatest product I have ever received', DATE('2023-10-14')),
+    (9, 'Bob', 0, 'WOW!', DATE('2023-09-01')),
+    (4, 'John', 1, 'cured cancer, but could have been better', DATE('2023-11-10'));
+    """
+    test_purchases = """
+    INSERT INTO purchase(username, itemId)
+    VALUES
+    ('Alice', 3),
+    ('Alice', 8),
+    ('Bob', 9)
+    """
+    test_seller_favs = """
+    INSERT INTO favoriteSeller(username, favoriteUsername) VALUES
+    ('Alice', 'Bob'),
+    ('John', 'Bob'),
+    ('Alice', 'Emma'),
+    ('John', 'Emma'),
+    ('Emma', 'Bob'),
+    ('Bob', 'Emma'),
+    ('Emma', 'Michael'),
+    ('Bob', 'Michael'),
+    ('Michael', 'Bob');
     """
 
-    cursor.execute(testItemsData)
-    cursor.execute(testCategoryData)
-    cursor.execute(testCategoryToItemData)
-    cursor.execute(testReviewData)
+    test_item_favs = """
+    INSERT INTO favoriteItem(username, itemId) VALUES
+    ('Alice', 6),
+    ('Alice', 7),
+    ('Bob', 2),
+    ('Bob', 10);
+    """
+
+    cursor.execute(test_items)
+    cursor.execute(test_categories)
+    cursor.execute(test_category_to_items)
+    cursor.execute(test_reviews)
+    cursor.execute(test_purchases)
+    cursor.execute(test_seller_favs)
+    cursor.execute(test_item_favs)
 
     db.commit()
 
-    response =    {
+    response = {
       "message":"Database initialized"
     }
 
     return jsonify(response)
   except Exception as e:
     print(e)
-  errorResponse = {
-    "status":"failed", 
-    "error":"AN EXCEPTION OCCURED." 
-  }
-  return jsonify(errorResponse), 500
+
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
 
 
 @app.route('/api/insertItem', methods=['POST'])
 def insertItem():
-  
   username = request.json['username']
-  itemTitle = request.json['itemTitle']
-  itemDesc  = request.json['itemDesc']
-  itemCategory = request.json['itemCategory']
-  itemPrice = request.json['itemPrice']
+  title = request.json['title']
+  desc  = request.json['desc']
+  categories = request.json['categories']
+  price = request.json['price']
+  bought = bool(False)
   placeDate = date.today()
-
 
   today_sql = f"{placeDate.year}-{placeDate.month}-{placeDate.day}"
   
   cursor = db.cursor()
 
   try:
-    itemQuery = "SELECT COUNT(*) FROM item WHERE username = %s AND placeDate = CURDATE()"
+    item_query = "SELECT COUNT(*) FROM item WHERE username = %s AND placeDate = CURDATE()"
     values = (username,)
-    cursor.execute(itemQuery, values)
-    itemCount = cursor.fetchone()[0]
-    print(f"itemCount: {itemCount}")
+    cursor.execute(item_query, values)
+    item_count = cursor.fetchone()[0]
+    print(f"itemCount: {item_count}")
 
-    if itemCount is not None and itemCount >= 3:
+    if item_count is not None and item_count >= 3:
       return jsonify({ "message":"Too many items inserted today."}), 400
 
-    sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate) VALUES (%s, %s, %s, %s, %s)"
-    values = (username, itemTitle, itemDesc, itemPrice, today_sql) 
+    sql = "INSERT INTO item (username, itemTitle, itemDesc, itemPrice, placeDate, bought) VALUES (%s, %s, %s, %s, %s, %s)"
+    values = (username, title, desc, price, today_sql, bought) 
     cursor.execute(sql, values)
 
     db.commit()
@@ -334,15 +424,25 @@ def insertItem():
     id = cursor.lastrowid
     print(f"Item ID: {id}")
 
-    for e in itemCategory:  
+    inserted_item = {
+      "id": id,
+      "title": title,
+      "desc": desc,
+      "categories": categories,
+      "price": price
+    }
+
+    for e in categories:  
       sql = "SELECT * FROM category WHERE title = %s"
       values = (e,)
       cursor.execute(sql,values)
       found = cursor.fetchone()
+
       if found is None:
         sql = "INSERT INTO category(title) VALUES (%s)"
         values = (e,)
         cursor.execute(sql,values)
+      
       sql = "INSERT INTO categoryToItem(itemId, categoryTitle) VALUES (%s,%s)"
       values = (id,e)
       cursor.execute(sql,values)
@@ -352,20 +452,146 @@ def insertItem():
     print(e)
     print(traceback.format_exc())
     
-    errorResponse = {
+    response = {
       "status":"failed", 
       "error":"AN EXCEPTION OCCURED." 
     }
-    return jsonify(errorResponse), 500
-  response = {
-    "message":"successful insert"
-  }
-  return jsonify(response)
+    return jsonify(response), 500
+  
+  return jsonify(inserted_item)
+
+
+@app.route('/api/buyItem', methods=['POST'])
+def buyItem():
+  username = request.json['username']
+  itemId = request.json['itemId']
+
+  cursor = db.cursor()
+
+  try:
+    query = "SELECT * FROM purchase WHERE username = %s AND itemId = %s"
+    values = (username, itemId)
+    cursor.execute(query, values)
+    result = cursor.fetchone()
+
+    if result != None:
+      response = {
+        "message":"Item has already been purchased."
+      }
+      return jsonify(response), 400
+
+    query = "INSERT INTO purchase(username, itemId) VALUES (%s, %s)"
+    values = (username, itemId)
+    cursor.execute(query, values)
+
+    query = "UPDATE item SET bought = true WHERE itemId = %s"
+    cursor.execute(query, (itemId,))
+
+    db.commit()
+
+    response = {
+      "message": "Item successfully purchased."
+    }
+    return jsonify(response)
+  except Exception as e:
+    print(e)
+
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
+
+
+@app.route('/api/purchases', methods=['GET'])
+def purchases():
+  formatted_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    username = request.args["username"]
+    query = "SELECT itemId FROM purchase WHERE username = %s"
+    cursor.execute(query, (username,))
+    item_ids = cursor.fetchall()
+
+    item_ids = [x[0] for x in item_ids]
+
+    for id in item_ids:
+      query = "SELECT itemTitle, itemDesc, itemPrice, username FROM item WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      item_result = cursor.fetchone()
+
+      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      category_titles = cursor.fetchall()
+
+      categories = [x[0] for x in category_titles]
+
+      formatted_item = {
+        "id": id,
+        "title": item_result[0],
+        "desc": item_result[1],
+        "price": item_result[2],
+        "seller": item_result[3],
+        "categories": categories
+      }
+
+      formatted_list.append(formatted_item)
+
+    return jsonify(formatted_list)
+  except Exception as e:
+    print(e)
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+  
+
+@app.route('/api/items', methods=['GET'])
+def items():
+  formatted_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    username = request.args["username"]
+    query = "SELECT itemId, itemTitle, itemDesc, itemPrice FROM item WHERE username = %s"
+    cursor.execute(query, (username,))
+    items = cursor.fetchall()
+
+    for item in items:
+      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (item[0],))
+      # Returns pairs ex: [(string,), ...]
+      category_titles = cursor.fetchall()
+
+      # Get categories as strings from pairs
+      categories = [x[0] for x in category_titles]
+
+      formatted_item = {
+        "id": item[0],
+        "title": item[1],
+        "desc": item[2],
+        "categories": categories,
+        "price": item[3]
+      }
+
+      formatted_list.append(formatted_item)
+
+    return jsonify(formatted_list)
+  except Exception as e:
+    print(e)
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
 
 
 @app.route('/api/search', methods=['GET'])
 def search():
-
   foramtted_list: list = []
 
   cursor = db.cursor()
@@ -405,7 +631,6 @@ def search():
       foramtted_list.append(item)
 
     return jsonify(foramtted_list)
-
   except Exception as e:
     print(e)
     print(traceback.format_exc())
@@ -415,8 +640,64 @@ def search():
           "error":"AN EXCEPTION OCCURED." 
         }
     return jsonify(response), 500
+
+# Search endpoint that filters items inserted by user
+@app.route('/api/searchFiltered', methods=['GET'])
+def searchFiltered():
+  foramtted_list: list = []
+
+  cursor = db.cursor()
   
-@app.route('/api/reviewItem', methods=["POST"])
+  try:
+    username = request.args["username"]
+    term = request.args["term"]
+    query = "SELECT itemId FROM categoryToItem WHERE categoryTitle = %s"
+    cursor.execute(query, (term,))
+    ids = cursor.fetchall()
+
+    print(f"ids: {ids}")
+
+    for id in ids:
+      sql = "SELECT itemTitle, itemDesc, itemPrice, username, bought FROM item WHERE itemId = %s AND username != %s"
+      values = (id[0], username)
+      cursor.execute(sql,values)
+      result = cursor.fetchone()
+
+      if result == None:
+        continue
+
+      sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      values = (id[0],)
+      cursor.execute(sql,values)
+      categoryTitles = cursor.fetchall()
+      categories = [x[0] for x in categoryTitles]
+
+      item = {
+        "id": id[0],
+        "title": result[0],
+        "desc" : result[1],
+        "price" : result[2],
+        "username": result[3],
+        "isBought": bool(result[4]),
+        "categories" : categories 
+        } 
+
+      print(f"item {id} is: {item}")
+      foramtted_list.append(item)
+
+    return jsonify(foramtted_list)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status":"failed", 
+      "error":"AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
+
+
+@app.route('/api/reviewItem', methods=['POST'])
 def review_item():
   item_id = request.json['itemId']
   username = request.json['username']
@@ -460,7 +741,86 @@ def review_item():
     return jsonify(response), 500
   
   return jsonify({ "message":"Review inserted."})
-  
+
+
+@app.route('/api/sellers', methods=['GET'])
+def sellers():
+  sellers_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    query = "SELECT username FROM user"
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    for user in result:
+      seller = {
+        "username": user[0]
+      }
+
+      sellers_list.append(seller)
+
+    return jsonify(sellers_list)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+      "status": "failed",
+      "error": "AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
+
+
+# Favorites endpoints below
+@app.route('/api/item/favorites', methods=['POST'])
+def itemFavorites():
+  username = request.json["username"]
+
+  formatted_list: list = []
+
+  cursor = db.cursor()
+
+  try:
+    query = "SELECT itemId FROM favoriteItem WHERE username = %s"
+    cursor.execute(query, (username,))
+    result = cursor.fetchall()
+
+    itemIds = [x[0] for x in result]
+
+    for id in itemIds:
+      query = "SELECT itemTitle, itemDesc, itemPrice, username FROM item WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      item_result = cursor.fetchone()
+
+      # Get categories
+      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (id,))
+      result = cursor.fetchall()
+
+      categories = [x[0] for x in result]
+
+      formatted_item = {
+        "id": id,
+        "title": item_result[0],
+        "desc": item_result[1],
+        "price": item_result[2],
+        "seller": item_result[3],
+        "categories": categories
+      }
+
+      formatted_list.append(formatted_item)
+
+    return jsonify(formatted_list)
+  except Exception as e:
+    print(e)
+    response = {
+      "status": "failed",
+      "error": "AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
+
 
 if __name__ == '__main__':
   app.run(port=5000)
