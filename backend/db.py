@@ -16,8 +16,7 @@ CORS(app)
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  # password=os.environ.get("DB_PASS"),
-  password="password",
+  password=os.environ.get("DB_PASS"),
   database="dubiousdb"
 )
 
@@ -807,13 +806,13 @@ def getExpensive():
         }
     return jsonify(response), 500
 
-@app.route('/api/two?category1=<cat1>&category2=<cat2>', methods = ["GET"])
+@app.route('/api/two', methods = ["GET"])
 def two_item_one_day():
   foramtted_list: list = []
   cursor = db.cursor()
 
-  X = request.json['cat1']
-  Y = request.json['cat2']
+  X = request.args['category1']
+  Y = request.args['category2']
   values =(X, Y)
   
   try:
@@ -855,11 +854,11 @@ def two_item_one_day():
         }
     return jsonify(response), 500
 
-app.route('/api/three?username=<username>', methods = ['GET'])
+@app.route('/api/three', methods = ['GET'])
 def positive_comments():
   foramtted_list: list = []
   cursor = db.cursor()
-
+  
   try:
     user = request.args["username"]
     #done
@@ -880,7 +879,7 @@ def positive_comments():
     GROUP BY
         i.itemId, i.itemTitle, i.itemDesc, i.itemPrice, i.bought;
     """
-    cursor.execute(query, user)
+    cursor.execute(query, (user,))
     result = cursor.fetchall()
     print(f"result: {result}")
 
@@ -888,9 +887,8 @@ def positive_comments():
       item = {
         "id":           e[0],
         "title":        e[1],
-        "Description":  e[2],
+        "desc":  e[2],
         "price" :       e[3],
-        "bought" :      e[4]
       }
       foramtted_list.append(item)
 
@@ -907,17 +905,21 @@ def positive_comments():
     return jsonify(response), 500
 
 
-app.route('/api/four')
+@app.route('/api/four', methods = ['POST'])
 def most_items_on_date():
   cursor = db.cursor()
   date = request.json['placeDate']
+  print(f"date: {date}")
+  formatted_list: list = []
 
   try:
     #done
     query = """
-   SELECT
+    WITH RankedUsers AS (
+    SELECT
         u.username,
-        COUNT(i.itemId) AS num_items_posted
+        COUNT(i.itemId) AS num_items_posted,
+        RANK() OVER (ORDER BY COUNT(i.itemId) DESC) AS posting_rank
     FROM
         user u
         JOIN item i ON u.username = i.username
@@ -925,15 +927,28 @@ def most_items_on_date():
         DATE(i.placeDate) = %s
     GROUP BY
         u.username
-    ORDER BY
-        num_items_posted DESC
-    LIMIT 1;
+      )
+      SELECT
+          username,
+          num_items_posted
+      FROM
+          RankedUsers
+      WHERE
+          posting_rank = 1;"""
 
-    """
+    cursor.execute(query, (date,))
+    result = cursor.fetchall()
 
-    cursor.execute(query, date)
-    db.commit()
-  
+    for user in result:
+      formatted_user = {
+        "username": user[0],
+        "count": user[1]
+      }
+
+      formatted_list.append(formatted_user)
+
+    return jsonify(formatted_list)
+
   except Exception as e:
     print(e)
     print(traceback.format_exc())
@@ -945,46 +960,35 @@ def most_items_on_date():
     return jsonify(response), 500
   
 
-app.route('/api/five?user1=<x>&user2=<y>', methods = ["GET"])
+@app.route('/api/five', methods = ["GET"])
 def mutual_favs():
-  foramtted_list: list = []
+  formatted_list: list = []
   cursor = db.cursor()
 
-  user1 = request.json["x"]
-  user2 = request.json["y"]
-  values = (user1, user2)
+  user1 = request.args["user1"]
+  user2 = request.args["user2"]
+  values = (user1, user2, user2, user1)
   #query done
   try:
     query = """
-    SELECT
-        u.username
-    FROM
-        user u
-    WHERE
-        u.username IN (
-            SELECT
-                fs.username
-            FROM
-                favoriteseller fs
-            WHERE
-                fs.favoriteUsername = %s
-        )
-        AND u.username IN (
-            SELECT
-                fs.username
-            FROM
-                favoriteseller fs
-            WHERE
-                fs.favoriteUsername = %s
-        );
-        """
+    SELECT DISTINCT fs1.favoriteUsername 
+    FROM favoriteseller fs1 
+    INNER JOIN favoriteseller fs2 ON fs1.favoriteUsername = fs2.favoriteUsername
+    WHERE fs1.username = %s
+    AND fs2.username = %s 
+    AND fs1.favoriteUsername NOT IN (%s)
+    AND fs2.favoriteUsername NOT IN (%s);
+    """
     
     cursor.execute(query, values)
     result = cursor.fetchall()
-    for e in result:
-      foramtted_list.append(e)
 
-    return jsonify(foramtted_list)
+    print(f"result in five: {result}")
+
+    for user in result:
+      formatted_list.append(user[0])
+
+    return jsonify(formatted_list)
 
   except Exception as e:
     print(e)
