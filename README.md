@@ -43,6 +43,9 @@ Jonathan N
 - Created the routes (login, logout, and register) and password hashing.
 - Helped with creating other backend routes and miscelaneous functionality
 - Implemented the review backend route
+- Implemented endpoints for requirements 6-10
+- Impelemtned endpoints for deleting and adding favorite sellers
+- Implemented endpoints for getting, deleting, and adding favorite items
 
 Mitchell M
 - Implemented backend for item insertion 
