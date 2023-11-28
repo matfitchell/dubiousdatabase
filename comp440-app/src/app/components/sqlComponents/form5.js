@@ -1,7 +1,7 @@
 "use client";
 
 import {Stack, Grid, Button, Select, MenuItem, InputLabel} from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Form5 = () => {
     // Have usernames as dropdown menus
@@ -10,7 +10,11 @@ const Form5 = () => {
     const [user1, setUser1] = useState("");
     const [user2, setUser2] = useState("");
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
+
         fetch("http://localhost:5000/api/sellers", {
             method: "GET",
             headers: {
@@ -24,6 +28,8 @@ const Form5 = () => {
             }
         })
         .catch(err => console.log(err));
+
+        dataFetch.current = true;
     }, [])
 
     const handleSubmit = (username1, username2) => {

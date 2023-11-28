@@ -2,14 +2,18 @@
 
 import FavoriteSeller from "@/app/components/favoriteSeller";
 import {Stack, Button, Container, Divider, OutlinedInput, Alert} from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const FavoriteSellers = () => {
     const [favorites, setFavorites] = useState([]);
     const [username, setUsername] = useState("");
     const [alertText, setAlertText] = useState(null);
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
+        
         const userObj = {
             username: localStorage.getItem("user")
         };
@@ -24,10 +28,12 @@ const FavoriteSellers = () => {
         .then(json => {
             if (json && json.message) {
                 setAlertText(json.message);
-            } else {
+            } else if (json) {
                 setFavorites(json);
             }
         }).catch(err => console.log(err))
+
+        dataFetch.current = true;
     }, []);
 
     const handleRemove = (username) => {
@@ -44,7 +50,7 @@ const FavoriteSellers = () => {
             body: JSON.stringify(removeObj)
         }).then(response => {
             if (response.ok) {
-                let filtered = favorites.filter((user) => user.username !== username);
+                let filtered = favorites.filter((user) => user !== username);
                 setFavorites(filtered);
             }
         })
@@ -69,7 +75,7 @@ const FavoriteSellers = () => {
         }).then(response => {
             if (response.ok) {
                 setAlertText(null);
-                setFavorites([...favorites, { username: user }])
+                setFavorites([...favorites, user])
             }
             return response.json();
         })
@@ -100,7 +106,7 @@ const FavoriteSellers = () => {
             paddingTop={5}
             >
             {favorites && favorites.map((user) => (
-                <FavoriteSeller key={user.username} seller={user.username} removeHandler={() => handleRemove(user.username)}/>
+                <FavoriteSeller key={user} seller={user} removeHandler={() => handleRemove(user)}/>
             ))}
             </Stack>
         </Container>

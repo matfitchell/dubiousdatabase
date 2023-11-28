@@ -3,13 +3,16 @@
 import InsertItemForm from "@/app/components/insertItemForm";
 import MyItem from "@/app/components/myItem";
 import { Stack, Grid, Button, Divider, Container } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const MyItems = () => {
     const [myItems, setMyItems] = useState(null);
     const [displayForm, setDisplayForm] = useState(false);
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
         const params = new URLSearchParams ({
             username: localStorage.getItem("user")
         });
@@ -26,6 +29,7 @@ const MyItems = () => {
             }
         })
         .catch(err => console.log(err));
+        dataFetch.current = true;
     }, [])
 
     const toggleInsertForm = () => {

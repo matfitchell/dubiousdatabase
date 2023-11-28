@@ -2,7 +2,7 @@
 
 import FavoriteItem from "@/app/components/favoriteItem";
 import {Stack, Alert, Button, Container, Divider, OutlinedInput} from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const FavoriteItems = () => {
 
@@ -10,7 +10,11 @@ const FavoriteItems = () => {
     const [item, setItem] = useState("");
     const [alertText, setAlertText] = useState(null);
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
+        
         const userObj = {
             username: localStorage.getItem("user")
         };
@@ -29,6 +33,9 @@ const FavoriteItems = () => {
                 setFavorites(json);
             }
         })
+        .catch(err => console.log(err))
+
+        dataFetch.current = true;
     }, []);
 
     const handleRemove = (id) => {

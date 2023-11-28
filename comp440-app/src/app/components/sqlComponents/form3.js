@@ -4,30 +4,6 @@ import {Stack, Grid, Button, TextField} from "@mui/material";
 import { useEffect, useState } from "react";
 
 const Form3 = () => {
-    // const testData = [
-    //     {
-    //         id: 1,
-    //         title: "Title",
-    //         desc: "Description",
-    //         price: 1999,
-    //         categories : ["category1", "category2"],
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Title",
-    //         desc: "Description",
-    //         price: 2000,
-    //         categories : ["category3", "category4"],
-    //     },
-    //     {
-    //         id: 3,
-    //         title: "Title",
-    //         desc: "Description",
-    //         price: 3000,
-    //         categories : ["category3", "category4"],
-    //     },
-    // ]
-
     const [data, setData] = useState(null); //items
     const [username, setUsername] = useState("");
 

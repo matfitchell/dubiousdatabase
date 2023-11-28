@@ -2,12 +2,16 @@
 
 import Purchase from "@/app/components/purchase";
 import {Container, Stack, Divider, Typography} from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const Purchases = () => {
     const [purchases, setPurchases] = useState([]);
 
+    const dataFetch = useRef(false);
+
     useEffect(() => {
+        if (dataFetch.current) return;
+
         const params = new URLSearchParams ({
             username: localStorage.getItem("user"),
         })
@@ -24,6 +28,8 @@ const Purchases = () => {
             }
         })
         .catch(err => console.log(err));
+        
+        dataFetch.current = true;
     }, [])
 
     return (
