@@ -5,21 +5,7 @@ import {Stack, Button, Container, Divider, OutlinedInput, Alert} from "@mui/mate
 import { useState, useEffect } from "react";
 
 const FavoriteSellers = () => {
-    let testSellers = [
-        {
-            username: "Megan"
-        },
-        {
-            username: "Tom"
-        },
-        {
-            username: "Bob"
-        },
-        {
-            username: "Emma"
-        }
-    ];
-    const [favorites, setFavorites] = useState(testSellers);
+    const [favorites, setFavorites] = useState([]);
     const [username, setUsername] = useState("");
     const [alertText, setAlertText] = useState(null);
 
@@ -28,20 +14,20 @@ const FavoriteSellers = () => {
             username: localStorage.getItem("user")
         };
 
-        // fetch("http://localhost:5000/api/seller/favorites", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify(userObj)
-        // }).then(response => response.json())
-        // .then(json => {
-        //     if (json && json.message) {
-        //         setAlertText(json.message);
-        //     } else {
-        //         setFavorites(json);
-        //     }
-        // }).catch(err => console.log(err))
+        fetch("http://localhost:5000/api/seller/favorites", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userObj)
+        }).then(response => response.json())
+        .then(json => {
+            if (json && json.message) {
+                setAlertText(json.message);
+            } else {
+                setFavorites(json);
+            }
+        }).catch(err => console.log(err))
     }, []);
 
     const handleRemove = (username) => {
@@ -50,22 +36,22 @@ const FavoriteSellers = () => {
             userToDel: username
         }
 
-        // fetch("http://localhost:5000/api/seller/favorite", {
-        //     method: "DELETE",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify(removeObj)
-        // }).then(response => {
-        //     if (response.ok) {
-        //         let filtered = favorites.filter((user) => user.username !== username);
-        //         setFavorites(filtered);
-        //     }
-        // })
-        // .then(json => {
-        //     console.log(json)
-        // })
-        // .catch(err => console.log(err));
+        fetch("http://localhost:5000/api/seller/favorite", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(removeObj)
+        }).then(response => {
+            if (response.ok) {
+                let filtered = favorites.filter((user) => user.username !== username);
+                setFavorites(filtered);
+            }
+        })
+        .then(json => {
+            console.log(json)
+        })
+        .catch(err => console.log(err));
     }
 
     const handleAdd = (user) => {
@@ -74,24 +60,24 @@ const FavoriteSellers = () => {
             userToFav: user
         }
 
-        // fetch("http://localhost:5000/api/seller/favorite", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify(addObj)
-        // }).then(response => {
-        //     if (response.ok) {
-        //         setAlertText(null);
-        //         setFavorites([...favorites, { username: user }])
-        //     }
-        //     return response.json();
-        // })
-        // .then(json => {
-        //     if (json && json.message) {
-        //         setAlertText(json.message);
-        //     }
-        // }).catch(err => console.log(err))
+        fetch("http://localhost:5000/api/seller/favorite", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(addObj)
+        }).then(response => {
+            if (response.ok) {
+                setAlertText(null);
+                setFavorites([...favorites, { username: user }])
+            }
+            return response.json();
+        })
+        .then(json => {
+            if (json && json.message) {
+                setAlertText(json.message);
+            }
+        }).catch(err => console.log(err))
     }
 
     return (
