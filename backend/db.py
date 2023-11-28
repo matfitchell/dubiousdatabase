@@ -851,7 +851,7 @@ def ten():
     cursor.execute(sql)
     result = cursor.fetchall()
     print(f"10 result: {result}")
-    return jsonify(result)
+    return jsonify(result[0])
   except Exception as e:
     print(e)
     print(traceback.format_exc())
