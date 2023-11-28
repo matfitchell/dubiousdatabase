@@ -1150,7 +1150,7 @@ def sellers():
 def itemFavorites():
   username = request.json["username"]
 
-  formatted_list: list = []
+  formatted_list = []
 
   cursor = db.cursor()
 
@@ -1181,10 +1181,50 @@ def itemFavorites():
         "seller": item_result[3],
         "categories": categories
       }
-
       formatted_list.append(formatted_item)
-
     return jsonify(formatted_list)
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+    response = {
+      "status": "failed",
+      "error": "AN EXCEPTION OCCURED." 
+    }
+    return jsonify(response), 500
+
+@app.route('/api/item/favorite', methods=['POST'])
+def add_favorite_item():
+  username = request.json["username"]
+  item_id = request.json["itemId"]
+
+  cursor = db.cursor()
+  try:
+    query = "INSERT INTO favoriteItem(username, itemId) VALUES (%s, %s)"
+    cursor.execute(query, (username, item_id))
+    db.commit()
+    return jsonify({"status": "success"})
+  except Exception as e:
+    print(e)
+    response = {
+      "status": "failed",
+      "error": "AN EXCEPTION OCCURED."
+    }
+    return jsonify(response), 500
+
+@app.route('/api/item/favorite', methods=['DELETE'])
+def itemFavoriteDelete():
+  username = request.json["username"]
+  item_id = request.json["itemId"]
+
+  cursor = db.cursor()
+
+  try:
+    query = "DELETE FROM favoriteItem WHERE username = %s AND itemId = %s"
+    cursor.execute(query, (username, item_id))
+    result = cursor.fetchall()
+    db.commit()
+    return jsonify(result)
+
   except Exception as e:
     print(e)
     response = {
