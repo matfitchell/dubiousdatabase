@@ -4,34 +4,33 @@ import {Stack, Grid, TextField, Button} from "@mui/material";
 import { useState } from "react";
 
 const Form4 = () => {
-    const testData = [
-        {
-            username: "Alice"
-        },
-        {
-            username: "John"
-        },
-        {
-            username: "Emma"
-        }
-    ]
-    const [data, setData] = useState(testData); //usernames
+    // const testData = [
+    //     {
+    //         username: "Alice"
+    //     },
+    //     {
+    //         username: "John"
+    //     },
+    //     {
+    //         username: "Emma"
+    //     }
+    // ]
+    const [data, setData] = useState([]); //usernames
     const [date, setDate] = useState("");
 
     const handleSubmit = (date) => {
-        // fetch("http://localhost:5000/api/four", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify({ date: date })
-        // }).then(response => response.json())
-        // .then(json => {
-        //     if (json && !json.message) {
-        //         setData(json)
-        //     }
-        // })
-        // .catch(err => console.log(err));
+        console.log(date)
+        fetch("http://localhost:5000/api/four", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ placeDate: date })
+        }).then(response => response.json())
+        .then(json => {
+            setData(json)
+        })
+        .catch(err => console.log(err));
     }
 
     return (
@@ -55,7 +54,8 @@ const Form4 = () => {
             <ol>
             {data && data.map((user, index) => 
                 <li key={index}>
-                    <strong>Username:</strong> {" " + user.username}
+                    <strong>Username:</strong> {" " + user.username} <br />
+                    <strong>Item count:</strong> {" " + user.count}
                 </li>
             )}
             </ol>

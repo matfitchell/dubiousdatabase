@@ -4,40 +4,38 @@ import {Grid, Button, TextField, Stack} from "@mui/material";
 import { useState } from "react";
 
 const Form2 = () => {
-    const testData = [
-        {
-            username: "Alice"
-        },
-        {
-            username: "John"
-        },
-        {
-            username: "Emma"
-        }
-    ]
+    // const testData = [
+    //     {
+    //         username: "Alice"
+    //     },
+    //     {
+    //         username: "John"
+    //     },
+    //     {
+    //         username: "Emma"
+    //     }
+    // ]
 
     const [cat1, setCat1] = useState("");
     const [cat2, setCat2] = useState("");
-    const [data, setData] = useState(testData);
+    const [data, setData] = useState([]);
 
     const handleSubmit = () => {
-        // const params = new URLSearchParams ({
-        //     category1: cat1,
-        //     category2: cat2
-        // })
+        const params = new URLSearchParams ({
+            category1: cat1,
+            category2: cat2
+        })
 
-        // fetch(`http://localhost:5000/api/two?${params}`, {
-        //     method: "GET",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     }
-        // }).then(response => response.json())
-        // .then(json => {
-        //     if (json && !json.message) {
-        //         setData(json);
-        //     }
-        // })
-        // .catch(err => console.log(err));
+        fetch(`http://localhost:5000/api/two?${params}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => response.json())
+        .then(json => {
+            setData(json)
+        })
+        .catch(err => console.log(err));
     }
 
     return (
@@ -70,7 +68,7 @@ const Form2 = () => {
             <ol>
             {data && data.map((user, index) => 
                 <li key={index}>
-                    <strong>Username:</strong> {" " + user.username}
+                    <strong>Username:</strong> {" " + user}
                 </li>
             )}
             </ol>

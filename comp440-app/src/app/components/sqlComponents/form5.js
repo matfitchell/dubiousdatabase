@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const Form5 = () => {
     // Have usernames as dropdown menus
-    const [data, setData] = useState(); //usernames
+    const [data, setData] = useState([]); //usernames
     const [userOptions, setUserOptions] = useState();
     const [user1, setUser1] = useState("");
     const [user2, setUser2] = useState("");
@@ -31,23 +31,21 @@ const Form5 = () => {
             return;
         }
 
-        // const params = new URLSearchParams({
-        //     user1: username1,
-        //     user2: username2
-        // })
+        const params = new URLSearchParams({
+            user1: username1,
+            user2: username2
+        })
 
-        // fetch(`http://localhost:5000/api/five?${params}`, {
-        //     method: "GET",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     }
-        // }).then(response => response.json())
-        // .then(json => {
-        //     if (json && !json.message) {
-        //         setData(json)
-        //     }
-        // })
-        // .catch(err => console.log(err));
+        fetch(`http://localhost:5000/api/five?${params}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => response.json())
+        .then(json => {
+           setData(json)
+        })
+        .catch(err => console.log(err));
     }
 
     const handleSelect1 = (e) => {
@@ -86,7 +84,7 @@ const Form5 = () => {
             <ol>
             {data && data.map((user, index) => 
                 <li key={index}>
-                    <strong>Username:</strong> {" " + user.username}
+                    <strong>Username:</strong> {" " + user}
                 </li>
             )}
             </ol>
