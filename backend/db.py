@@ -1246,8 +1246,9 @@ def sellerFavoriteDelete():
   try:
     query = "DELETE FROM favoriteSeller WHERE username = %s AND favoriteUsername = %s"
     cursor.execute(query, (username, user_to_del))
-    result = cursor.fetchall()
-    return jsonify(result)
+
+    db.commit()
+    return jsonify()
 
   except Exception as e:
     print(e)
