@@ -755,7 +755,7 @@ def positive_comments():
 
   try:
     user = request.args["username"]
-    #done// returns nothing atm
+    #done
     query = """
     SELECT
         i.itemId,
