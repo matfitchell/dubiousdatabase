@@ -10,24 +10,35 @@ const Items = () => {
     const [data, setData] = useState([]);
     const [itemToReview, setItemToReview] = useState(null);
 
-    const buyHandler = (id) => {
+    const buyHandler = (item) => {
         const buyItem = {
             username: localStorage.getItem("user"),
-            itemId: id
+            itemId: item.id
         };
 
-        console.log(buyItem);
+        fetch("http://localhost:5000/api/buyItem", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(buyItem)
+        })
+        .then(response => {
+            if (response.ok) {
+                // Update item to reflect purchase
+                const updatedData = data.map((elem) => {
+                    if (elem.id === item.id) {
+                        return { ...elem, isBought: true };
+                    }
+                    return elem;
+                });
 
-        // fetch("http://localhost:5000/api/buyItem", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify(buyItem)
-        // })
-        // .then(response => response.json())
-        // .then(jsonData => console.log(jsonData))
-        // .catch(err => console.log(err));
+                setData(updatedData);
+            }
+            return response.json();
+        })
+        .then(jsonData => console.log(jsonData))
+        .catch(err => console.log(err));
     }
 
     const closeReviewForm = () => {
@@ -36,10 +47,11 @@ const Items = () => {
 
     const onSearch = (searchText) => {
         const params = new URLSearchParams ({
+            username: localStorage.getItem("user"),
             term: searchText
         })
 
-        fetch(`http://localhost:5000/api/search?${params}`, {
+        fetch(`http://localhost:5000/api/searchFiltered?${params}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
@@ -62,7 +74,7 @@ const Items = () => {
                 paddingTop={5}
                 >
                 {data && data.map((item) => (
-                    <Item key={item.id} {...item} buyHandler={() => buyHandler(item.id)} reviewHandler={() => setItemToReview(item)} />
+                    <Item key={item.id} {...item} buyHandler={() => buyHandler(item)} reviewHandler={() => setItemToReview(item)} />
                 ))}
             </Stack>
         </Container>
