@@ -1266,7 +1266,9 @@ def sellerFavorite():
     query = "SELECT favoriteUsername FROM favoriteSeller WHERE username = %s"
     cursor.execute(query, (username,))
     result = cursor.fetchall()
-    return jsonify(result)
+
+    users = [x[0] for x in result]
+    return jsonify(users)
 
   except Exception as e:
     print(e)
