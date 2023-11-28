@@ -6,6 +6,7 @@
 
 #### Prerequisites
 - Python3
+- Node
 
 #### Start the backend app
 1. Open backend folder and install dependencies using the following commands in the terminal:
@@ -21,13 +22,21 @@
     ```
 
 #### Start the web page
-Open public/index.html or use the `Live Server` extension on VSCode to host the front-end on port 5500.
+1. Open `comp440-app` folder and install dependencies by running:
+```
+npm install
+```
+2. Run the app using the command:
+```
+npm run dev
+```
 
 #### Contributions
 Alisha A
-- Created the front-end UI and functionality using HTML, CSS with Bootstrap, and Javascript.
+- Changed front-end frameworks to ReactJS and NextJS. Used Material UI for the reusable components.
 - Helped out with testing/implementing each backend endpoint.
 - Implemented the endpoint to initialize certain database tables and populate them with test data.
+- Implemented endpoints to get purchases, purchase items, get favorite sellers, get inserted items, and search through items.
 
 Jonathan N
 - Set up the back-end web app
@@ -38,5 +47,4 @@ Jonathan N
 Mitchell M
 - Implemented backend for item insertion 
 - Implemented backend for search by category
-- Greatly assisted by teammates, helped with additonal components//teammates where possible
--Implemented Phase 2 requirements 1-5 
+- Greatly assisted by teammates, helped with additonal components//teammates where possible 
