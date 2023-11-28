@@ -8,13 +8,16 @@ from flask_cors import CORS
 from datetime import date
 
 
+
+
 app = Flask(__name__)
 CORS(app)
 
 db = mysql.connector.connect(
   host="localhost",
   user="root",
-  password=os.environ.get("DB_PASS"),
+  # password=os.environ.get("DB_PASS"),
+  password="password",
   database="dubiousdb"
 )
 
@@ -746,6 +749,252 @@ def review_item():
     return jsonify(response), 500
   
   return jsonify({ "message":"Review inserted."})
+
+@app.route('/api/one', methods = ["GET"])
+def getExpensive():
+
+  foramtted_list: list = []
+  cursor = db.cursor()
+  try:
+    #done
+    query = """
+    WITH RankedItems AS (
+    SELECT
+        i.itemId,
+        i.itemTitle,
+        i.itemPrice,
+        c.title,
+        ROW_NUMBER() OVER (PARTITION BY c.title ORDER BY i.itemPrice DESC) AS rank_within_category
+    FROM
+        item i
+        JOIN categorytoitem ci ON i.itemID = ci.itemId
+        JOIN category c ON ci.categoryTitle = c.title
+    )
+    SELECT
+      itemId,
+      itemTitle,
+      itemPrice,
+      title
+    FROM
+      RankedItems
+    WHERE
+      rank_within_category = 1;
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print(f"result: {result}")
+
+    for e in result:
+      item = {
+        "id":       e[0],
+        "title" :   e[1],
+        "price" :   e[2],
+        "category": e[3]
+      }
+
+      print(f"Most Expensive Item: {item}")
+      foramtted_list.append(item)
+    
+    return jsonify(foramtted_list)
+
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
+
+@app.route('/api/two?category1=<cat1>&category2=<cat2>', methods = ["GET"])
+def two_item_one_day():
+  foramtted_list: list = []
+  cursor = db.cursor()
+
+  X = request.json['cat1']
+  Y = request.json['cat2']
+  values =(X, Y)
+  
+  try:
+    #done
+    query = """
+    SELECT
+      u.username
+    FROM
+        user u
+        JOIN item i1 ON u.username = i1.username
+        JOIN categorytoitem itc1 ON i1.itemId = itc1.itemId
+        JOIN category c1 ON itc1.categoryTitle = c1.title
+        JOIN item i2 ON u.username = i2.username
+        JOIN categorytoitem itc2 ON i2.itemId = itc2.itemId
+        JOIN category c2 ON itc2.categoryTitle = c2.title
+    WHERE
+        i1.placeDate = i2.placeDate
+        AND i1.itemId <> i2.itemId
+        AND c1.title = %s
+        AND c2.title = %s;
+
+    """
+    cursor.execute(query,values)
+    result = cursor.fetchall()
+    print(f"result: {result}")
+
+    for e in result:
+      foramtted_list.append(e)
+
+    return jsonify(foramtted_list)
+
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
+
+app.route('/api/three?username=<username>', methods = ['GET'])
+def positive_comments():
+  foramtted_list: list = []
+  cursor = db.cursor()
+
+  try:
+    user = request.args["username"]
+    #done
+    query = """
+    SELECT
+        i.itemId,
+        i.itemTitle,
+        i.itemDesc,
+        i.itemPrice,
+        i.bought
+    FROM
+        item i
+        JOIN review co ON i.itemId = co.itemId
+        JOIN user u_posted ON i.username = u_posted.username
+    WHERE
+        (co.rating IS NULL OR co.rating IN (0, 1))
+        AND u_posted.username = %s
+    GROUP BY
+        i.itemId, i.itemTitle, i.itemDesc, i.itemPrice, i.bought;
+    """
+    cursor.execute(query, user)
+    result = cursor.fetchall()
+    print(f"result: {result}")
+
+    for e in result:
+      item = {
+        "id":           e[0],
+        "title":        e[1],
+        "Description":  e[2],
+        "price" :       e[3],
+        "bought" :      e[4]
+      }
+      foramtted_list.append(item)
+
+    return jsonify(foramtted_list)
+  
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
+
+
+app.route('/api/four')
+def most_items_on_date():
+  cursor = db.cursor()
+  date = request.json['placeDate']
+
+  try:
+    #done
+    query = """
+   SELECT
+        u.username,
+        COUNT(i.itemId) AS num_items_posted
+    FROM
+        user u
+        JOIN item i ON u.username = i.username
+    WHERE
+        DATE(i.placeDate) = %s
+    GROUP BY
+        u.username
+    ORDER BY
+        num_items_posted DESC
+    LIMIT 1;
+
+    """
+
+    cursor.execute(query, date)
+    db.commit()
+  
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
+  
+
+app.route('/api/five?user1=<x>&user2=<y>', methods = ["GET"])
+def mutual_favs():
+  foramtted_list: list = []
+  cursor = db.cursor()
+
+  user1 = request.json["x"]
+  user2 = request.json["y"]
+  values = (user1, user2)
+  #query done
+  try:
+    query = """
+    SELECT
+        u.username
+    FROM
+        user u
+    WHERE
+        u.username IN (
+            SELECT
+                fs.username
+            FROM
+                favoriteseller fs
+            WHERE
+                fs.favoriteUsername = %s
+        )
+        AND u.username IN (
+            SELECT
+                fs.username
+            FROM
+                favoriteseller fs
+            WHERE
+                fs.favoriteUsername = %s
+        );
+        """
+    
+    cursor.execute(query, values)
+    result = cursor.fetchall()
+    for e in result:
+      foramtted_list.append(e)
+
+    return jsonify(foramtted_list)
+
+  except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+
+    response = {
+          "status":"failed", 
+          "error":"AN EXCEPTION OCCURED." 
+        }
+    return jsonify(response), 500
 
 @app.route('/api/six', methods=["GET"])
 def six():
