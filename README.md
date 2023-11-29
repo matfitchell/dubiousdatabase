@@ -37,7 +37,7 @@ Alisha A
 - Used Material UI for the reusable components in the front-end.
 - Helped out with testing/implementing each backend endpoint.
 - Implemented the endpoint to initialize certain database tables and populate them with test data.
-- Implemented endpoints to get, purchase, and search items.
+- Implemented endpoints to get, purchase, and search items not inserted by user.
 - Implemented endpoints to get all users and get favorited sellers.
 
 Jonathan N
