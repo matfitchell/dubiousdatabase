@@ -1,6 +1,6 @@
 import {Button, Chip, Grid, Stack, Typography} from '@mui/material';
 
-const Item = ({ id, title, categories, desc, price, seller, isBought, buyHandler, reviewHandler }) => {
+const Item = ({ id, title, categories, desc, price, username, isBought, buyHandler, reviewHandler }) => {
   return (
     <Grid container spacing={2} key={id} justifyContent={"space-between"}>
         <Grid xs={3} item>
@@ -26,7 +26,7 @@ const Item = ({ id, title, categories, desc, price, seller, isBought, buyHandler
                 alignItems={'center'}
                 spacing={0.5}>                
                 <Typography variant='body2'>Sold by:</Typography>
-                <Typography variant='body1'>{seller}</Typography>
+                <Typography variant='body1'>{username}</Typography>
             </Stack>
             <Typography>{"$" + price/100.00}</Typography>
             <Stack direction={"row"} 
