@@ -17,9 +17,9 @@
 2. Ensure db exists called "dubiousdb"
 3. Set the `DB_PASS` environment variable to your MySQL root password.
 4. Start the backend app using the following command in the terminal:
-    ```
-    python3 db.py
-    ```
+```
+python3 db.py
+```
 
 #### Start the web page
 1. Open `comp440-app` folder and install dependencies by running:
