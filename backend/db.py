@@ -57,6 +57,7 @@ VALUES
 
 globalCursor.execute(sqlCreate)
 globalCursor.execute(testUserData)
+db.commit()
 globalCursor.close()
 
 # Enums for ratings
@@ -717,7 +718,7 @@ def review_item():
     today = date.today()
     today_sql = f"{today.year}-{today.month}-{today.day}"
 
-    sql = "SElECT reviewId FROM review WHERE userName= %s and date= %s"
+    sql = "SElECT reviewId FROM review WHERE username= %s and date= %s"
     values = (username,today_sql)
     cursor.execute(sql, values)
 
@@ -728,6 +729,17 @@ def review_item():
       # User already submitted 3 reviews today
       response = {
         "message":"Too many reviews submitted today"
+      }
+      return jsonify(response), 400
+    
+    sql2 = "SELECT reviewId FROM review WHERE username = %s AND itemId = %s"
+    values2 = (username, item_id)
+    cursor.execute(sql2, values2)
+    result2 = cursor.fetchall()
+
+    if result != None and len(result) > 0:
+      response = {
+        "message": "You already reviewed this item."
       }
       return jsonify(response), 400
 
