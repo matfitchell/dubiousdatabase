@@ -1,11 +1,13 @@
 "use client";
 
-import { Stack, Grid, TextField, FormControl, InputLabel, Select, MenuItem, Button } from "@mui/material";
+import { Stack, Grid, TextField, FormControl, InputLabel, Select, MenuItem, Button, Alert } from "@mui/material";
 import { useState } from "react";
 
 const ReviewForm = ({itemId, itemTitle, closeReviewForm}) => {
     const [rating, setRating] = useState();
     const [desc, setDesc] = useState();
+    const [alert, setAlert] = useState(false);
+    const [alertText, setAlertText] = useState("");
 
     const handleReview = (reviewObj) => {
         fetch("http://localhost:5000/api/reviewItem", {
@@ -16,12 +18,18 @@ const ReviewForm = ({itemId, itemTitle, closeReviewForm}) => {
           body: JSON.stringify(reviewObj)
         }).then(response => {
             if (response.ok) {
-                closeReviewForm;
+                setAlert(false)
+                closeReviewForm();
+            }
+            else {
+                setAlert(true);
             }
             return response.json();
         })
         .then(json => {
-            console.log(json);
+            if (json && json.message) {
+                setAlertText(json.message);
+            }
         })
         .catch(err => console.log(err));
     }
@@ -43,6 +51,7 @@ const ReviewForm = ({itemId, itemTitle, closeReviewForm}) => {
         <Stack direction={"column"} justifyContent={"center"} alignItems={"center"} paddingTop={5}>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2} maxWidth={400}>
+                    {alert ? <Grid item xs={12}><Alert severity="error">{alertText}</Alert></Grid> : <></>}
                     <Grid item xs={12}>
                         <TextField 
                             disabled
