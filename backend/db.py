@@ -205,17 +205,18 @@ def initializeDb():
     """
     category_table = """
       CREATE TABLE category (
+        categoryId int NOT NULL AUTO_INCREMENT,
         title varchar(255) NOT NULL,
-        PRIMARY KEY(title)
+        PRIMARY KEY(categoryId)
       )
     """
     category_to_item_table = """
       CREATE TABLE categoryToItem(
         matchId int NOT NULL AUTO_INCREMENT,
         itemId int NOT NULL,
-        categoryTitle varchar(255) NOT NULL,
+        categoryId int NOT NULL,
         PRIMARY KEY (matchId),
-        FOREIGN KEY (categoryTitle) REFERENCES category(title),
+        FOREIGN KEY (categoryId) REFERENCES category(categoryId),
         FOREIGN KEY (itemId) REFERENCES item(itemId)
       )
     """
@@ -284,56 +285,38 @@ def initializeDb():
     (9, 'Michael', 'Xbox Series S', 'The latest Xbox with next-gen speed and performance.', 34999, DATE('2023-08-29'), true),
     (10, 'Emma', 'iPhone 13', 'Great phone in the color Midnight.', 60000, DATE('2023-10-09'), false);  
     """ 
-    test_categories = """INSERT INTO category(title) VALUES
-    ('Samsung'),
-    ('Cellphone'),
-    ('Android'),
-    ('Laptop'),
-    ('Apple'),
-    ('MacBook'),
-    ('Gaming'),
-    ('Console'),
-    ('Sony'),
-    ('Camera'),
-    ('Photography'),
-    ('Canon'),
-    ('Dell'),
-    ('Windows'),
-    ('Headphones'),
-    ('Nintendo'),
-    ('Case'),
-    ('Xbox');
+    test_categories = """INSERT INTO category(categoryId, title) VALUES
+    (1, 'Cellphone'),
+    (2, 'Laptop'),
+    (3, 'Apple'),
+    (4, 'MacBook'),
+    (5, 'Gaming'),
+    (6, 'Console'),
+    (7, 'Camera'),
+    (8, 'Headphones'),
+    (9, 'Case'),
+    (10, 'Samsung');
     """
     test_category_to_items = """
-    INSERT INTO categoryToItem (categoryTitle, itemID)
+    INSERT INTO categoryToItem (categoryId, itemID)
     VALUES
-    ('Samsung', 1),
-    ('Cellphone', 1),
-    ('Android', 1),
-    ('Laptop', 2),
-    ('Apple', 2),
-    ('MacBook', 2),
-    ('Gaming', 3),
-    ('Console', 3),
-    ('Sony', 3),
-    ('Camera', 4),
-    ('Photography', 4),
-    ('Canon', 4),
-    ('Laptop', 5),
-    ('Dell', 5),
-    ('Windows', 5),
-    ('Headphones', 6),
-    ('Gaming', 7),
-    ('Console', 7),
-    ('Nintendo', 7),
-    ('Samsung', 8),
-    ('Cellphone', 8),
-    ('Case', 8),
-    ('Gaming', 9),
-    ('Console', 9),
-    ('Xbox', 9),
-    ('Apple', 10),
-    ('Cellphone', 10);
+    (1, 1),
+    (10, 1),
+    (2, 2),
+    (5, 3),
+    (6, 3),
+    (7, 4),
+    (2, 5),
+    (8, 6),
+    (5, 7),
+    (6, 7),
+    (1, 8),
+    (9, 8),
+    (10, 8),
+    (5, 9),
+    (6, 9),
+    (3, 10),
+    (1, 10);
     """ 
     test_reviews = """
     INSERT INTO review(itemId, username, rating, description, date)
@@ -395,6 +378,7 @@ def initializeDb():
     return jsonify(response)
   except Exception as e:
     print(e)
+    print(traceback.format_exc())
 
     response = {
       "status":"failed", 
@@ -446,7 +430,7 @@ def insertItem():
     }
 
     for e in categories:  
-      sql = "SELECT * FROM category WHERE title = %s"
+      sql = "SELECT categoryId, title FROM category WHERE title = %s"
       values = (e,)
       cursor.execute(sql,values)
       found = cursor.fetchone()
@@ -461,6 +445,7 @@ def insertItem():
       else:
         print(f"found: {found}")
         categoryId = found[0]
+
       print(f"Parsed category id: {categoryId}")
       sql = "INSERT INTO categoryToItem(itemId, categoryId) VALUES (%s,%s)"
       values = (id,categoryId)
@@ -543,10 +528,17 @@ def purchases():
       cursor.execute(query, (id,))
       item_result = cursor.fetchone()
 
-      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      query = "SELECT categoryId FROM categoryToItem WHERE itemId = %s"
       cursor.execute(query, (id,))
-      category_titles = cursor.fetchall()
-
+      category_ids = cursor.fetchall()
+      category_ids = [x[0] for x in category_ids]
+      category_titles = set()
+      for category_id in category_ids:
+        query = "SELECT title FROM category WHERE categoryId = %s"
+        cursor.execute(query, (category_id,))
+        category_title = cursor.fetchone()
+        print(f"Category Title: {category_title}")
+        category_titles.add(category_title)
       categories = [x[0] for x in category_titles]
 
       formatted_item = {
@@ -584,11 +576,18 @@ def items():
     items = cursor.fetchall()
 
     for item in items:
-      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      query = "SELECT categoryId FROM categoryToItem WHERE itemId = %s"
       cursor.execute(query, (item[0],))
       # Returns pairs ex: [(string,), ...]
-      category_titles = cursor.fetchall()
-
+      category_ids = cursor.fetchall()
+      category_ids = [x[0] for x in category_ids]
+      category_titles = set()
+      for category_id in category_ids:
+        query = "SELECT title FROM category WHERE categoryId = %s"
+        cursor.execute(query, (category_id,))
+        category_title = cursor.fetchone()
+        print(f"Category Title: {category_title}")
+        category_titles.add(category_title)
       # Get categories as strings from pairs
       categories = [x[0] for x in category_titles]
 
@@ -605,6 +604,7 @@ def items():
     return jsonify(formatted_list)
   except Exception as e:
     print(e)
+    print(traceback.format_exc())
     response = {
       "status":"failed", 
       "error":"AN EXCEPTION OCCURED."
@@ -621,25 +621,42 @@ def search():
   
   try:
     term = request.args["term"]
-    query = "SELECT itemId FROM categoryToItem WHERE categoryTitle = %s"
+
+    query = "SELECT categoryId FROM category WHERE title = %s"
     cursor.execute(query, (term,))
+    categoryId = cursor.fetchone()[0]
+
+    query = "SELECT itemId FROM categoryToItem WHERE categoryId = %s"
+    cursor.execute(query, (categoryId,))
     ids = cursor.fetchall()
 
     print(f"ids: {ids}")
 
     for id in ids:
 
-      sql = "SELECT itemTitle, itemDesc, itemPrice FROM item WHERE itemId = %s"
+      sql = "SELECT itemTitle, itemDesc, itemPrice, username, bought FROM item WHERE itemId = %s"
       values = (id[0],)
       cursor.execute(sql,values)
-      result = cursor.fetchall()[0]
+      result = cursor.fetchone()
       print(f"result: {result}")
 
-      sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
-      values = (id[0],)
-      cursor.execute(sql,values)
-      categoryTitles = cursor.fetchall()
-      categories = [x[0] for x in categoryTitles]
+      query = "SELECT categoryId FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (id[0],))
+      # Returns pairs ex: [(string,), ...]
+      category_ids = cursor.fetchall()
+      category_ids = [x[0] for x in category_ids]
+      print(f"Category Ids: {category_ids}")
+
+      category_titles = set()
+      for category_id in category_ids:
+        query = "SELECT title FROM category WHERE categoryId = %s"
+        cursor.execute(query, (category_id,))
+        category_title = cursor.fetchone()
+        print(f"Category Title: {category_title}")
+        category_titles.add(category_title)
+
+      # Get categories as strings from pairs
+      categories = [x[0] for x in category_titles]
       print(f"categories: {categories}")
 
       item = {
@@ -647,9 +664,11 @@ def search():
         "title": result[0],
         "desc" : result[1],
         "price" : result[2],
-        "categories" : categories 
-        } 
-      
+        "categories" : categories,
+        "username": result[3],
+        "isBought": result[4]
+        }
+
       print(f"item to send: {item}")
       foramtted_list.append(item)
 
@@ -675,8 +694,13 @@ def searchFiltered():
   try:
     username = request.args["username"]
     term = request.args["term"]
-    query = "SELECT itemId FROM categoryToItem WHERE categoryTitle = %s"
+
+    query = "SELECT categoryId FROM category WHERE title = %s"
     cursor.execute(query, (term,))
+    categoryId = cursor.fetchone()[0]
+
+    query = "SELECT itemId FROM categoryToItem WHERE categoryId = %s"
+    cursor.execute(query, (categoryId,))
     ids = cursor.fetchall()
 
     print(f"ids: {ids}")
@@ -690,11 +714,23 @@ def searchFiltered():
       if result == None:
         continue
 
-      sql = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
-      values = (id[0],)
-      cursor.execute(sql,values)
-      categoryTitles = cursor.fetchall()
-      categories = [x[0] for x in categoryTitles]
+      query = "SELECT categoryId FROM categoryToItem WHERE itemId = %s"
+      cursor.execute(query, (id[0],))
+      # Returns pairs ex: [(string,), ...]
+      category_ids = cursor.fetchall()
+      category_ids = [x[0] for x in category_ids]
+      print(f"Category Ids: {category_ids}")
+
+      category_titles = set()
+      for category_id in category_ids:
+        query = "SELECT title FROM category WHERE categoryId = %s"
+        cursor.execute(query, (category_id,))
+        category_title = cursor.fetchone()
+        print(f"Category Title: {category_title}")
+        category_titles.add(category_title)
+
+      # Get categories as strings from pairs
+      categories = [x[0] for x in category_titles]
 
       item = {
         "id": id[0],
@@ -797,7 +833,7 @@ def getExpensive():
     FROM
         item i
         JOIN categorytoitem ci ON i.itemID = ci.itemId
-        JOIN category c ON ci.categoryTitle = c.title
+        JOIN category c ON (SELECT title FROM category WHERE categoryId = ci.categoryId) = c.title
     )
     SELECT
       itemId,
@@ -855,10 +891,10 @@ def two_item_one_day():
         user u
         JOIN item i1 ON u.username = i1.username
         JOIN categorytoitem itc1 ON i1.itemId = itc1.itemId
-        JOIN category c1 ON itc1.categoryTitle = c1.title
+        JOIN category c1 ON (SELECT title FROM category WHERE categoryId = itc1.categoryId) = c1.title
         JOIN item i2 ON u.username = i2.username
         JOIN categorytoitem itc2 ON i2.itemId = itc2.itemId
-        JOIN category c2 ON itc2.categoryTitle = c2.title
+        JOIN category c2 ON (SELECT title FROM category WHERE categoryId = itc2.categoryId) = c2.title
     WHERE
         i1.placeDate = i2.placeDate
         AND i1.itemId <> i2.itemId
@@ -1208,11 +1244,18 @@ def itemFavorites():
       item_result = cursor.fetchone()
 
       # Get categories
-      query = "SELECT categoryTitle FROM categoryToItem WHERE itemId = %s"
+      query = "SELECT categoryId FROM categoryToItem WHERE itemId = %s"
       cursor.execute(query, (id,))
-      result = cursor.fetchall()
-
-      categories = [x[0] for x in result]
+      category_ids = cursor.fetchall()
+      category_ids = [x[0] for x in category_ids]
+      category_titles = set()
+      for category_id in category_ids:
+        query = "SELECT title FROM category WHERE categoryId = %s"
+        cursor.execute(query, (category_id,))
+        category_title = cursor.fetchone()
+        print(f"Category Title: {category_title}")
+        category_titles.add(category_title)
+      categories = [x[0] for x in category_titles]
 
       formatted_item = {
         "id": id,
