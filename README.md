@@ -53,3 +53,5 @@ Mitchell M
 - Implemented backend for item insertion 
 - Implemented backend for search by category
 - Greatly assisted by teammates, helped with additonal components//teammates where possible 
+- Implemented endpoints 1-5
+
