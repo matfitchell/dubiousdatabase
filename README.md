@@ -53,3 +53,28 @@ Mitchell M
 - Implemented backend for item insertion 
 - Implemented backend for search by category
 - Greatly assisted by teammates, helped with additonal components//teammates where possible 
+- Implemented endpoints 1-5
+
+### EXPECTED OUTPUTS
+
+#### 1
+
+- Output:
+
+#### 2
+
+- Input:
+- Output:
+
+
+#### 9
+
+Users who have posted items and none of their items have received poor reviews
+
+- Output: Alice, Emma, Michael
+
+#### 10
+
+User pair such that each user gave the others' items only positive reviews
+
+- Output: Bob, John
