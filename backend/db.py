@@ -435,12 +435,17 @@ def insertItem():
       cursor.execute(sql,values)
       found = cursor.fetchone()
 
+      categoryId = None
+
       if found is None:
         sql = "INSERT INTO category(title) VALUES (%s)"
         values = (e,)
         cursor.execute(sql,values)
-      print(f"found: {found}")
-      categoryId = found[0]
+        categoryId = cursor.lastrowid
+      else:
+        print(f"found: {found}")
+        categoryId = found[0]
+
       print(f"Parsed category id: {categoryId}")
       sql = "INSERT INTO categoryToItem(itemId, categoryId) VALUES (%s,%s)"
       values = (id,categoryId)
