@@ -47,11 +47,10 @@ const Items = () => {
 
     const onSearch = (searchText) => {
         const params = new URLSearchParams ({
-            username: localStorage.getItem("user"),
             term: searchText
         })
 
-        fetch(`http://localhost:5000/api/searchFiltered?${params}`, {
+        fetch(`http://localhost:5000/api/search?${params}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
