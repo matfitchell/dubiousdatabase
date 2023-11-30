@@ -57,6 +57,7 @@ VALUES
 
 globalCursor.execute(sqlCreate)
 globalCursor.execute(testUserData)
+
 db.commit()
 globalCursor.close()
 
@@ -93,6 +94,7 @@ def register():
   last_name = request.json['last_name']
 
   cursor = db.cursor()
+  db.commit()
 
   hashed_password, salt = hash_password(password)
 
@@ -125,6 +127,7 @@ def login():
   password = request.json['password']
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     sql = "SElECT passWord, passSalt FROM (user) WHERE username= %s"
@@ -176,6 +179,7 @@ def logout():
 @app.route('/api/initializeDb', methods=['GET'])
 def initializeDb():
   cursor = db.cursor()
+  db.commit()
 
   try:
     cursor.execute("DROP TABLE IF EXISTS `review`")
@@ -412,6 +416,7 @@ def insertItem():
   today_sql = f"{placeDate.year}-{placeDate.month}-{placeDate.day}"
   
   cursor = db.cursor()
+  db.commit()
 
   try:
     item_query = "SELECT COUNT(*) FROM item WHERE username = %s AND placeDate = CURDATE()"
@@ -475,6 +480,7 @@ def buyItem():
   itemId = request.json['itemId']
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     query = "SELECT * FROM purchase WHERE username = %s AND itemId = %s"
@@ -516,6 +522,7 @@ def purchases():
   formatted_list: list = []
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     username = request.args["username"]
@@ -562,6 +569,7 @@ def items():
   formatted_list: list = []
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     username = request.args["username"]
@@ -603,6 +611,7 @@ def search():
   foramtted_list: list = []
 
   cursor = db.cursor()
+  db.commit()
   
   try:
     term = request.args["term"]
@@ -655,6 +664,7 @@ def searchFiltered():
   foramtted_list: list = []
 
   cursor = db.cursor()
+  db.commit()
   
   try:
     username = request.args["username"]
@@ -713,6 +723,7 @@ def review_item():
   desc = request.json['desc']
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     today = date.today()
@@ -766,6 +777,7 @@ def getExpensive():
 
   foramtted_list: list = []
   cursor = db.cursor()
+  db.commit()
   try:
     #done
     query = """
@@ -822,6 +834,7 @@ def getExpensive():
 def two_item_one_day():
   foramtted_list: list = []
   cursor = db.cursor()
+  db.commit()
 
   X = request.args['category1']
   Y = request.args['category2']
@@ -870,6 +883,7 @@ def two_item_one_day():
 def positive_comments():
   foramtted_list: list = []
   cursor = db.cursor()
+  db.commit()
   
   try:
     user = request.args["username"]
@@ -920,6 +934,7 @@ def positive_comments():
 @app.route('/api/four', methods = ['POST'])
 def most_items_on_date():
   cursor = db.cursor()
+  db.commit()
   date = request.json['placeDate']
   print(f"date: {date}")
   formatted_list: list = []
@@ -976,6 +991,7 @@ def most_items_on_date():
 def mutual_favs():
   formatted_list: list = []
   cursor = db.cursor()
+  db.commit()
 
   user1 = request.args["user1"]
   user2 = request.args["user2"]
@@ -1017,6 +1033,7 @@ def six():
   # Display all the users who never posted any "excellent" items: an item is excellent if at least
   # three reviews are excellent.
   cursor = db.cursor()
+  db.commit()
 
   try:
     sql = 'SELECT DISTINCT username FROM user WHERE username NOT IN(\
@@ -1041,6 +1058,7 @@ def six():
 def seven():
   # Display all users who never posted a poor review
   cursor = db.cursor()
+  db.commit()
 
   try:
     sql = 'SELECT DISTINCT username FROM user WHERE username NOT IN (SELECT DISTINCT username FROM review WHERE rating = 3)'
@@ -1063,6 +1081,7 @@ def seven():
 def eight():
   # Display all users who posted poor reviews
   cursor = db.cursor()
+  db.commit()
 
   try:
     sql = 'SELECT DISTINCT username FROM review WHERE username IN (SELECT DISTINCT username FROM review WHERE rating = 3)'
@@ -1085,6 +1104,7 @@ def eight():
 def nine():
   # Display users where for all their items, none have received a poor rating
   cursor = db.cursor()
+  db.commit()
 
   try:
     sql = 'SELECT DISTINCT username FROM item WHERE itemId NOT IN (SELECT DISTINCT itemId FROM review WHERE rating = 3)'
@@ -1107,6 +1127,7 @@ def nine():
 def ten():
   # List a user pair such that they always gave each other excellent reviews
   cursor = db.cursor()
+  db.commit()
 
   try:
     sql = 'SELECT DISTINCT R1.username, R2.username\
@@ -1132,6 +1153,7 @@ def sellers():
   sellers_list: list = []
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     query = "SELECT username FROM user"
@@ -1165,6 +1187,7 @@ def itemFavorites():
   formatted_list = []
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     query = "SELECT itemId FROM favoriteItem WHERE username = %s"
@@ -1210,6 +1233,7 @@ def add_favorite_item():
   item_id = request.json["itemId"]
 
   cursor = db.cursor()
+  db.commit()
   try:
     query = "INSERT INTO favoriteItem(username, itemId) VALUES (%s, %s)"
     cursor.execute(query, (username, item_id))
@@ -1229,6 +1253,7 @@ def itemFavoriteDelete():
   item_id = request.json["itemId"]
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     query = "DELETE FROM favoriteItem WHERE username = %s AND itemId = %s"
@@ -1251,6 +1276,7 @@ def add_favorite_seller():
   user_to_fav = request.json["userToFav"]
 
   cursor = db.cursor()
+  db.commit()
   try:
     query = "INSERT INTO favoriteSeller(username, favoriteUsername) VALUES (%s, %s)"
     cursor.execute(query, (username, user_to_fav))
@@ -1272,6 +1298,7 @@ def sellerFavorite():
     return add_favorite_seller(username, request.json["userToFav"])
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     # Get favorite sellers for username
@@ -1296,6 +1323,7 @@ def sellerFavoriteDelete():
   user_to_del = request.json["userToDel"]
 
   cursor = db.cursor()
+  db.commit()
 
   try:
     query = "DELETE FROM favoriteSeller WHERE username = %s AND favoriteUsername = %s"
