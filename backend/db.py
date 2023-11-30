@@ -289,32 +289,31 @@ def initializeDb():
     (1, 'Cellphone'),
     (2, 'Laptop'),
     (3, 'Apple'),
-    (4, 'MacBook'),
-    (5, 'Gaming'),
-    (6, 'Console'),
-    (7, 'Camera'),
-    (8, 'Headphones'),
-    (9, 'Case'),
-    (10, 'Samsung');
+    (4, 'Gaming'),
+    (5, 'Console'),
+    (6, 'Camera'),
+    (7, 'Headphones'),
+    (8, 'Case'),
+    (9, 'Samsung');
     """
     test_category_to_items = """
     INSERT INTO categoryToItem (categoryId, itemID)
     VALUES
     (1, 1),
-    (10, 1),
+    (9, 1),
     (2, 2),
+    (4, 3),
     (5, 3),
-    (6, 3),
-    (7, 4),
+    (6, 4),
     (2, 5),
-    (8, 6),
+    (7, 6),
+    (4, 7),
     (5, 7),
-    (6, 7),
     (1, 8),
+    (8, 8),
     (9, 8),
-    (10, 8),
+    (4, 9),
     (5, 9),
-    (6, 9),
     (3, 10),
     (1, 10);
     """ 
