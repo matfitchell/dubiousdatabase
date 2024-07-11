@@ -1,6 +1,6 @@
 # Database Project
 
-## Phase 1
+A full-stack application focused on database design.
 
 ### Usage
 
